@@ -44,14 +44,14 @@ function displayInventory() {
         }
 
         console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
-        
-        buyersQuery();
+
+        buyersQuery(res);
 
         connection.end();
     });
 }
 
-function buyersQuery() {
+function buyersQuery(res) {
 
     inquirer
         .prompt([{
@@ -59,9 +59,10 @@ function buyersQuery() {
                 type: "input",
                 message: chalk.magenta("Please enter the item number of the print you wish to purchase:"),
                 validate: function (value) {
-                    if (isNaN(value) === false) {
+                    if (isNaN(value) === false && value < (res.length + 1) && value > 0) {
                         return true;
                     }
+                    console.log(" Sorry, that isn't an item number in our inventory.")
                     return false;
                 }
             },
@@ -79,6 +80,21 @@ function buyersQuery() {
         ])
         .then(function (answer) {
 
+            console.log("\nYou selected " + chalk.yellow(answer.quantity) + " copies of " + chalk.yellow(res[answer.item].product_name) + " by " + chalk.greenBright(res[answer.item].artist_name));
+
+            if ( answer.quantity > res[answer.item].stock_quantity ) {
+
+                console.log("\nWe're sorry, but we only have " + chalk.yellow(res[answer.item].stock_quantity) + " copies of " + chalk.yellow(res[answer.item].product_name) + " by " + chalk.greenBright(res[answer.item].artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(res[answer.item].stock_quantity) + ".\n");
+
+                buyersQuery(res);
+
+            } else {
+                
+                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + res[answer.item].retail_price * answer.quantity) + " (" + answer.quantity + " @ $" + res[answer.item].retail_price + " each)\n");
+
+                console.log(chalk.blue("\nPlease enter the number of one of the following choices: \n") + chalk.yellow("1. [PLACE ORDER]") + " to complete your transaction, \n" + chalk.yellow("2. [EDIT SELECTION]") + " to change your selection and/or quantity, or \n" + chalk.yellow("3. [EXIT]") + " if you are not ready to order right now.\n");
+
+            }
 
         });
 }
