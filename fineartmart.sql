@@ -1,3 +1,10 @@
+-- ====================================================
+-- Fine Art Mart Node.js and MySQL CLI store inventory app
+-- ©2018 Richard Trevillian
+-- University of Richmond (Virginia)
+-- Full Stack Developer Bootcamp (July 2018)
+-- ====================================================
+
 DROP DATABASE IF EXISTS fineartmart_db;
 CREATE DATABASE fineartmart_db;
 
@@ -10,7 +17,7 @@ CREATE TABLE products (
     artist_name VARCHAR(100),
     retail_price DECIMAL(10,2),
     stock_quantity INT
-)
+);
 
 INSERT INTO products (department, product_name, artist_name, retail_price, stock_quantity)
 VALUES ("prints", "Monalisa", "Leonardo da Vinci", 99.99, 50), 
