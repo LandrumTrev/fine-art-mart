@@ -9,6 +9,7 @@ var mysql = require("mysql");
 var inquirer = require("inquirer");
 var chalk = require('chalk');
 
+
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -17,10 +18,16 @@ var connection = mysql.createConnection({
     database: "fineartmart_db"
 });
 
+
 connection.connect(function (err) {
     if (err) throw err;
     displayInventory();
 });
+
+
+// =======================================================================================
+// FIRST FUNCTION, CALLED BY .connect(). DISPLAYS THE INVENTORY LIST
+// =======================================================================================
 
 function displayInventory() {
     connection.query("SELECT * FROM products", function (err, res) {
@@ -30,9 +37,10 @@ function displayInventory() {
         console.log(chalk.yellow('\n Welcome to FINE ART MART! \n'));
         console.log(chalk.blue(' Here is a list of fine art reproductions we currently have in stock:'));
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.magenta(' item | price | title and artist'));
+        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock)'));
         console.log(chalk.blue('--------------------------------------------------------------------\n'));
 
+        // call a FOR LOOP on (res) to console.log all items in inventory
         for (let i = 0; i < res.length; i++) {
 
             var itemNo = res[i].item_id;
@@ -40,19 +48,28 @@ function displayInventory() {
                 itemNo = "0" + itemNo;
             }
 
-            console.log("   " + chalk.gray(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + "\n");
+            console.log("   " + chalk.gray(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(" + res[i].stock_quantity + ")") + "\n");
         }
 
         console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
 
+        // =======================================================================================
+
+        // after display inventory, call function that asks item and quantity to purchase
+        // and pass in (res), which is an array of all inventory objects
         buyersQuery(res);
-
-        connection.end();
     });
-}
+};
 
+
+// =======================================================================================
+// SECOND FUNCTION, CALLED BY displayInventory(). ASKS FOR ITEM AND QUANTITY
+// =======================================================================================
+
+// pass in (res) from displayInventory(), which is the Array of all inventory objects
 function buyersQuery(res) {
 
+    // ask for item and quantity customer wishes to purchase
     inquirer
         .prompt([{
                 name: "item",
@@ -80,73 +97,112 @@ function buyersQuery(res) {
         ])
         .then(function (answer) {
 
-            var orderTotal = res[answer.item].retail_price * answer.quantity;
+            // var orderTotal = res[answer.item - 1].retail_price * answer.quantity;
 
-            console.log("\nYou selected " + chalk.yellow(answer.quantity) + " copies of " + chalk.yellow(res[answer.item].product_name) + " by " + chalk.greenBright(res[answer.item].artist_name));
+            console.log("\nYou selected " + chalk.yellow(answer.quantity) + " copies of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name));
 
-            if (answer.quantity > res[answer.item].stock_quantity) {
+            // check to see if the quantity requested exceeds the number of items in inventory
+            if (answer.quantity > res[answer.item - 1].stock_quantity) {
 
-                console.log("\nWe're sorry, but we only have " + chalk.yellow(res[answer.item].stock_quantity) + " copies of " + chalk.yellow(res[answer.item].product_name) + " by " + chalk.greenBright(res[answer.item].artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(res[answer.item].stock_quantity) + ".\n");
+                // if the customer wants more items than exist in inventory,
+                console.log("\nWe're sorry, but we only have " + chalk.yellow(res[answer.item - 1].stock_quantity) + " copies of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(res[answer.item - 1].stock_quantity) + ".\n");
 
+                // send them back to the item and quantity input prompt (self-ref this function)
+                // pass in the Array of inventory objects, so customer can still select from it
                 buyersQuery(res);
 
             } else {
 
-                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + orderTotal) + " (" + answer.quantity + " @ $" + res[answer.item].retail_price + " each)\n");
-
-                inquirer
-                    .prompt({
-                        name: "finalchoice",
-                        type: "list",
-                        message: chalk.red("\nUse your up/down arrow keys to select one of the following: \n") + chalk.green("1. [PLACE ORDER]") + " to complete your transaction, \n" + chalk.green("2. [EDIT SELECTION]") + " to change your selection and/or quantity, or \n" + chalk.green("3. [EXIT]") + " if you are not ready to order right now.\n",
-                        choices: ["PLACE ORDER", "EDIT SELECTION", "EXIT"],
-
-                    })
-                    .then(function (answer, orderTotal) {
-
-                        // REWRITE SWITCH CASE AS IF ELSE
-                        
-                        // switch (answer.action) {
-                        //     case "PLACE ORDER":
-                        //         console.log(orderTotal);
-                        //         console.log("Monkey Butts!");
-                        //         placeOrder(res, answer, orderTotal);
-                        //         break;
-
-                        //     case "EDIT SELECTION":
-                        //         buyersQuery();
-                        //         break;
-
-                        //     case "EXIT":
-                        //         userExit();
-                        //         break;
-
-                        //     // default:
-                        //     //     placeOrder();
-                        // }
+                // Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100
 
 
-                    });
+                // otherwise, if the quantity of the order can be fulfilled based on inventory available
+                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100
+                ) + " (" + answer.quantity + " @ $" + res[answer.item - 1].retail_price + " each)\n");
+
+                // send them on to the (3rd function) final order confirmation choice,
+                // which offers the choices: PLACE ORDER, EDIT SELECTION, or EXIT
+                // pass in both the inventory object array, and answers (item and quant) from this inquirer
+                finalChoice(res, answer);
 
             }
-
-
-            function placeOrder(res, answer, orderTotal) {
-
-                // call the database and subtract the order quantity from the items stock_quanity
-
-                console.log("\nThank you for your order. In case you need more copies of THE_ITEM, we now currently have NEW_QUANTITY THE_ITEM prints in stock.\n");
-
-                // console.log("Thank you for your order. Your account has been charged " + chalk.yellow("$" + orderTotal));
-
-            };
-
-            function userExit() {
-
-                console.log("Thank you for visiting Fine Art Mart. Please come again soon.");
-
-            };
 
         });
 
 }
+
+
+// =======================================================================================
+// THIRD FUNCTION, CALLED BY buyersQuery(). ASKS FOR PLACE ORDER, EDIT SELECTION, or EXIT
+// =======================================================================================
+
+// pass in (res) the inventory object array, 
+// and (answer) the customer's item and quantity data
+function finalChoice(res, answer) {
+
+    // ask the user to either confirm order, change order, or exit
+    inquirer
+        .prompt({
+            name: "finalchoice",
+            type: "rawlist",
+            message: chalk.red("\nEnter the number of one of the following choices: \n") + chalk.green("1. [PLACE ORDER]") + " to complete your transaction, \n" + chalk.green("2. [EDIT SELECTION]") + " to change your selection and/or quantity, or \n" + chalk.green("3. [EXIT]") + " if you are not ready to order right now.\n",
+            choices: ["PLACE ORDER", "EDIT SELECTION", "EXIT"],
+
+        })
+        .then(function (choice) {
+
+            console.log(choice.finalchoice);
+
+            if (choice.finalchoice === "PLACE ORDER") {
+                // call the fourth function, which completes the order
+                // pass in the inventory objects array, as well as item and quantity data
+                placeOrder(res, answer);
+            } else if (choice.finalchoice === "EDIT SELECTION") {
+                // or call the item and quantity input function again
+                // pass the inventory objects array back into the input function
+                buyersQuery(res);
+            } else if (choice.finalchoice === "EXIT") {
+                // or call the fifth function, which exits the storefront
+                userExit();
+            } else {
+                console.log("Please enter a valid selection.")
+            }
+
+        });
+}
+
+
+
+// =======================================================================================
+// FOURTH FUNCTION, called by finalChoice(), IF USER CONFIRMS ITEM, QUANTITY AND TOTAL PRICE
+// =======================================================================================
+
+function placeOrder(res, answer) {
+
+    // call the database and subtract the order quantity from the items stock_quanity
+
+    console.log(chalk.green("\nThank you for your order. Your account has been charged ") + chalk.yellow("$" + Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100));
+
+    console.log("\nIf need more copies of this item, we now have " + chalk.yellow(res[answer.item - 1].stock_quantity) + " prints of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name) + " left in stock.\n");
+
+    console.log("Would you like to place another order? (inquirer)\n");
+    
+    // make sure to disconnect from the database at a functional end point
+    connection.end();
+    return;
+};
+
+
+
+// =======================================================================================
+// FIFTH FUNCTION, called by finalChoice(), IF USER DECIDES TO EXIT STORE WITHOUT PURCHASE
+// =======================================================================================
+
+function userExit() {
+
+    console.log("\nThank you for visiting Fine Art Mart. Please come again soon.\n");
+
+    // make sure to disconnect from the database at a functional end point
+    connection.end();
+    return;
+};
