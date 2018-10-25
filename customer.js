@@ -5,6 +5,11 @@
 // Full Stack Developer Bootcamp (July 2018)
 // ====================================================
 
+
+// =======================================================================================
+// GLOBAL VARIABLES AND DATABASE CONNECT FUNCTION
+// =======================================================================================
+
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var chalk = require('chalk');
@@ -97,14 +102,13 @@ function buyersQuery(res) {
         ])
         .then(function (answer) {
 
-            // var orderTotal = res[answer.item - 1].retail_price * answer.quantity;
-
+            // tell the customer the item and quantity they chose
             console.log("\nYou selected " + chalk.yellow(answer.quantity) + " copies of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name));
 
             // check to see if the quantity requested exceeds the number of items in inventory
             if (answer.quantity > res[answer.item - 1].stock_quantity) {
 
-                // if the customer wants more items than exist in inventory,
+                // if the customer wants more items than exist in inventory, then
                 console.log("\nWe're sorry, but we only have " + chalk.yellow(res[answer.item - 1].stock_quantity) + " copies of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(res[answer.item - 1].stock_quantity) + ".\n");
 
                 // send them back to the item and quantity input prompt (self-ref this function)
@@ -113,12 +117,8 @@ function buyersQuery(res) {
 
             } else {
 
-                // Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100
-
-
                 // otherwise, if the quantity of the order can be fulfilled based on inventory available
-                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100
-                ) + " (" + answer.quantity + " @ $" + res[answer.item - 1].retail_price + " each)\n");
+                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100) + " (" + answer.quantity + " @ $" + res[answer.item - 1].retail_price + " each)\n");
 
                 // send them on to the (3rd function) final order confirmation choice,
                 // which offers the choices: PLACE ORDER, EDIT SELECTION, or EXIT
@@ -146,8 +146,7 @@ function finalChoice(res, answer) {
             name: "finalchoice",
             type: "rawlist",
             message: chalk.red("\nEnter the number of one of the following choices: \n") + chalk.green("1. [PLACE ORDER]") + " to complete your transaction, \n" + chalk.green("2. [EDIT SELECTION]") + " to change your selection and/or quantity, or \n" + chalk.green("3. [EXIT]") + " if you are not ready to order right now.\n",
-            choices: ["PLACE ORDER", "EDIT SELECTION", "EXIT"],
-
+            choices: ["PLACE ORDER", "EDIT SELECTION", "EXIT"]
         })
         .then(function (choice) {
 
@@ -174,33 +173,82 @@ function finalChoice(res, answer) {
 
 
 // =======================================================================================
-// FOURTH FUNCTION, called by finalChoice(), IF USER CONFIRMS ITEM, QUANTITY AND TOTAL PRICE
+// FOURTH FUNCTION, called by finalChoice() IF USER CHOOSES "PLACE ORDER", 
+// UPDATES THE QUANTITY OF THE ITEM IN THE DATABASE, THEN CALLS orderConfirm()
 // =======================================================================================
 
 function placeOrder(res, answer) {
 
-    // call the database and subtract the order quantity from the items stock_quanity
+    // make a call to the database, and reduce the stock_quantity of the item ordered by the ordered quantity
+    connection.query("UPDATE products SET ? WHERE ?",
+        [{
+                stock_quantity: res[answer.item - 1].stock_quantity - answer.quantity
+            },
+            {
+                item_id: answer.item
+            }
+        ],
+        function (err, updateRes) {
+            if (err) throw err;
 
-    console.log(chalk.green("\nThank you for your order. Your account has been charged ") + chalk.yellow("$" + Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100));
+            // after item's quantity is updated, call orderConfirm()
+            // pass in: (answer) the item number and quantity chosen by user
+            orderConfirm(answer);
 
-    console.log("\nIf need more copies of this item, we now have " + chalk.yellow(res[answer.item - 1].stock_quantity) + " prints of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name) + " left in stock.\n");
+        });
 
-    console.log("Would you like to place another order? (inquirer)\n");
-    
-    // make sure to disconnect from the database at a functional end point
-    connection.end();
-    return;
+};
+
+
+// =======================================================================================
+// FIFTH FUNCTION, called by placeOrder(), READS UPDATED QUANT FROM DB
+// =======================================================================================
+
+// here just pass in the customer's item number and quantity selected,
+// as we will now call the database and get a new set of all data with quantities updated
+function orderConfirm(answer) {
+
+    // call the database, and get a new set of all items with quantities updated, called (finalRes)
+    connection.query("SELECT * FROM products", function (err, finalRes) {
+            if (err) throw err;
+
+            // tell the customer how much they have been charged for their order
+            console.log(chalk.green("\nThank you for your order. Your account has been charged ") + chalk.yellow("$" + Math.round(((finalRes[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100));
+
+            // tell the customer how many prints of the item they ordered now remain in stock
+            console.log("\nIf need more copies of this item, we now have " + chalk.yellow(finalRes[answer.item - 1].stock_quantity) + " prints of " + chalk.yellow(finalRes[answer.item - 1].product_name) + " by " + chalk.greenBright(finalRes[answer.item - 1].artist_name) + " left in stock.\n");
+
+            // ask the customer if they want to place another order
+            inquirer
+                .prompt({
+                    name: "buymore",
+                    type: "confirm",
+                    message: "Would you like to place another order?"
+                })
+                .then(function (yesno) {
+
+                    if (yesno.buymore === true) {
+                        // call the item and quantity input again, and pass it the updated inventory array
+                        buyersQuery(finalRes);
+                    } else {
+                        // call the userExit() function and say goodbye
+                        userExit();
+                    }
+                });
+
+        });
+
 };
 
 
 
 // =======================================================================================
-// FIFTH FUNCTION, called by finalChoice(), IF USER DECIDES TO EXIT STORE WITHOUT PURCHASE
+// SIXTH FUNCTION, WHEN USER DECIDES TO EXIT STORE
 // =======================================================================================
 
 function userExit() {
 
-    console.log("\nThank you for visiting Fine Art Mart. Please come again soon.\n");
+    console.log(chalk.red("\nThank you for visiting Fine Art Mart. Please come again soon.\n"));
 
     // make sure to disconnect from the database at a functional end point
     connection.end();
