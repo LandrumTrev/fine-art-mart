@@ -2,7 +2,7 @@
 
 ### A Node.js and MySQL CLI storefront and inventory manager for fine art reproductions
 
-*MySQL, Node.js, npm, node_modules (inquirer, mysql). customer.js is a public-facing storefront, manager.js is an inventory control management back end.*
+*MySQL, Node.js, npm, node_modules (inquirer, mysql, chalk). customer.js is a public-facing storefront, manager.js is an inventory control management back end.*
 _________________________________________________
 
 [[Fine Art Mart demo movie](https://github.com/LandrumTrev/fine-art-mart/blob/master/FineArtMart-demo.mp4)](https://github.com/LandrumTrev/fine-art-mart/blob/master/FineArtMart-demo.mp4)

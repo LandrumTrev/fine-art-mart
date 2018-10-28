@@ -40,7 +40,7 @@ connection.connect(function (err) {
 
 function managerMenu() {
 
-    // ask the user to either confirm order, change order, or exit
+    // ask the manager which inventory control function to access
     inquirer
         .prompt({
             name: "stockMgmnt",
@@ -54,35 +54,28 @@ function managerMenu() {
 
             if (choice.stockMgmnt === "VIEW PRODUCTS FOR SALE") {
                 // call function that displays all items in inventory
-                // console.log("You chose: VIEW PRODUCTS FOR SALE.")
                 displayForSale();
 
             } else if (choice.stockMgmnt === "VIEW LOW INVENTORY") {
                 // call function that displays only inventory items with low stock quantity
-                // console.log("You chose: VIEW LOW INVENTORY.")
                 viewLowStock();
 
             } else if (choice.stockMgmnt === "ADD TO INVENTORY") {
                 // call function that allows the increase of an item's stock_quantity
-                // console.log("You chose: ADD TO INVENTORY.")
                 addInventory();
 
             } else if (choice.stockMgmnt === "ADD NEW PRODUCT") {
                 // call function that adds a brand new item into the inventory
-                // console.log("You chose: ADD NEW PRODUCT.")
                 addItem();
 
             } else if (choice.stockMgmnt === "EXIT INVENTORY MANAGER") {
                 // call function that adds a brand new item into the inventory
-                // console.log("You chose: EXIT INVENTORY MANAGER.")
                 managerExit();
 
             } else {
                 console.log("Please enter a valid selection.")
             }
-
         });
-
 }
 
 
@@ -91,10 +84,15 @@ function managerMenu() {
 // 1. VIEW PRODUCTS FOR SALE - DISPLAYS ALL ITEMS IN INVENTORY
 // =======================================================================================
 
+// display a full list of all items in inventory and all info about each item
 function displayForSale() {
+
+    // fetch all items from the products table in db
     connection.query("SELECT * FROM products", function (err, res) {
+
         if (err) throw err;
 
+        // list header display messages
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
         console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
         console.log(chalk.blue(' ALL ITEMS CURRENTLY IN THE FINE ART MART INVENTORY:'));
@@ -110,21 +108,15 @@ function displayForSale() {
                 itemNo = "0" + itemNo;
             }
 
+            // format for each list item in the loop to display
             console.log("   " + chalk.gray(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(" + res[i].stock_quantity + ")") + "\n");
         }
 
         console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
 
-        // =======================================================================================
-
-        // call the initial Manager's Menu function
+        // call the Inventory Management Menu function
         managerMenu();
     });
-
-    // // make sure to disconnect from the database at a functional end point
-    // connection.end();
-    // return;
-
 };
 
 
@@ -133,10 +125,15 @@ function displayForSale() {
 // 2. VIEW LOW INVENTORY - DISPLAY ALL ITEMS WITH A LOW NUMBER OF ITEMS IN STOCK
 // =======================================================================================
 
+// call to display low inventory items
 function viewLowStock() {
+
+    // fetch all items from the products table in db
     connection.query("SELECT * FROM products", function (err, res) {
+
         if (err) throw err;
 
+        // list header display messages
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
         console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
         console.log(chalk.blue(' THE FOLLOWING ITEMS HAVE QUANTITIES OF LESS THAN 10 IN STOCK:'));
@@ -152,6 +149,7 @@ function viewLowStock() {
                 itemNo = "0" + itemNo;
             }
 
+            // only display detail for items with an inventory stock quantity less than 10
             if (res[i].stock_quantity < 10) {
 
                 console.log("   " + chalk.gray(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(" + res[i].stock_quantity + ")") + "\n");
@@ -161,9 +159,7 @@ function viewLowStock() {
 
         console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
 
-        // =======================================================================================
-
-        // call the initial Manager's Menu function
+        // call the Inventory Management Menu function
         managerMenu();
     });
 
@@ -174,19 +170,22 @@ function viewLowStock() {
 // 3. ADD TO INVENTORY - RECORD NEW INVENTORY RECIEVED INTO STOCK DATABASE
 // =======================================================================================
 
+// call to add more inventory quantity to an existing item
 function addInventory() {
 
+    // header display messages
     console.log(chalk.blue('\n--------------------------------------------------------------------'));
     console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
     console.log(chalk.blue(' ENTER THE ITEM NUMBER AND NUMBER OF PRODUCTS TO INCREASE ITS INVENTORY:'));
     console.log(chalk.blue('\n--------------------------------------------------------------------'));
 
-    // first connection called so inquirer validate can make sure that
-    // manager is choosing a valid stock item number to update
+    // first connection called so inquirer's validate function can make sure that
+    // manager is choosing an existing stock item number to update
     connection.query("SELECT * FROM products", function (err, res) {
 
         if (err) throw err;
 
+        // ask for the product's item number and quantity to add
         inquirer
             .prompt([{
                     name: "stockItem",
@@ -215,6 +214,7 @@ function addInventory() {
             .then(function (stock) {
 
                 // the new quantity to SET is the # of items added + current # of items in stock
+                // needs parseInt() as these raw values are Strings (numbers concatenate instead of add w/o parseInt)
                 var newQuantity = parseInt(stock.stockQuantity) + parseInt(res[stock.stockItem - 1].stock_quantity);
 
                 console.log(newQuantity);
@@ -229,6 +229,7 @@ function addInventory() {
                         }
                     ],
                     function (err, res2) {
+
                         if (err) throw err;
 
                         // tell the manager the item and number of items added
@@ -239,11 +240,10 @@ function addInventory() {
                                 item_id: stock.stockItem
                             },
                             function (err, res3) {
+
                                 if (err) throw err;
 
-                                // console.log(res3);
-
-                                // tell the manager the item and new total number of items in stock
+                                // confirm the updated item's quantity with data from a fresh mySQL SELECT
                                 console.log("\nThere are now a total of " + chalk.yellow(res3[0].stock_quantity) + " copies of " + chalk.yellow(res3[0].product_name) + " by " + chalk.greenBright(res3[0].artist_name) + " in stock.");
 
                                 // call the initial Manager's Menu function
@@ -265,14 +265,17 @@ function addInventory() {
 // 4. ADD NEW PRODUCT - ALLOWS THE ADDITION OF A NEW ITEM TO THE STORE
 // =======================================================================================
 
+// call to add a brand new item and it's details into the database
 function addItem() {
 
+    // header display messages
     console.log(chalk.blue('\n--------------------------------------------------------------------'));
     console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
     console.log(chalk.blue(' ENTER THE FOLLOWING INFORMATION TO ADD A NEW PRODUCT TO THE INVENTORY LIST:'));
     console.log(chalk.blue('\n--------------------------------------------------------------------'));
 
-
+    // ask for all the details to enter about an item
+    // department and name (of artwork) are required
     inquirer
         .prompt([{
                 name: "dept",
@@ -324,9 +327,11 @@ function addItem() {
                     stock_quantity: newItem.quantity
                 },
                 function (err, res4) {
+
                     if (err) throw err;
 
-                    // follow-up connection query to confirm addition of new item, and to return its auto_incremented item_id number
+                    // follow-up connection query to confirm addition of new item, 
+                    // and also to return its auto_incremented item_id number
                     connection.query("SELECT * FROM products WHERE ?", {
                             product_name: newItem.name
                         },
@@ -343,19 +348,21 @@ function addItem() {
                             // call the initial Manager's Menu function
                             managerMenu();
 
-                        }); // end connection.query(SELECT *) new select all to confirm updated quantity
+                        }); // end connection.query(SELECT *) new select all to confirm added item details
 
-                }); // end connection.query(UPDATE)
+                }); // end connection.query(INSERT) new item
 
         }); // end inquirer
 
 }; // end addItem()
 
 
+
 // =======================================================================================
 // 5. MANAGER EXIT - EXIT THE MANAGEMENT FUNCTION
 // =======================================================================================
 
+// call this function to exit from the Inventory Manager application
 function managerExit() {
 
     console.log(chalk.red("\nYou have now logged out of the Fine Art Mart INVENTORY MANAGER.\n"));
