@@ -46,7 +46,7 @@ function managerMenu() {
             name: "stockMgmnt",
             type: "rawlist",
             message: chalk.red("\nEnter the number of an inventory management function: \n"),
-            choices: ["VIEW PRODUCTS FOR SALE", "VIEW LOW INVENTORY", "ADD TO INVENTORY", "ADD NEW PRODUCT"]
+            choices: ["VIEW PRODUCTS FOR SALE", "VIEW LOW INVENTORY", "ADD TO INVENTORY", "ADD NEW PRODUCT", "EXIT INVENTORY MANAGER"]
         })
         .then(function (choice) {
 
@@ -54,23 +54,28 @@ function managerMenu() {
 
             if (choice.stockMgmnt === "VIEW PRODUCTS FOR SALE") {
                 // call function that displays all items in inventory
+                // console.log("You chose: VIEW PRODUCTS FOR SALE.")
                 displayForSale();
-                console.log("You chose: VIEW PRODUCTS FOR SALE.")
 
             } else if (choice.stockMgmnt === "VIEW LOW INVENTORY") {
                 // call function that displays only inventory items with low stock quantity
+                // console.log("You chose: VIEW LOW INVENTORY.")
                 viewLowStock();
-                console.log("You chose: VIEW LOW INVENTORY.")
 
             } else if (choice.stockMgmnt === "ADD TO INVENTORY") {
                 // call function that allows the increase of an item's stock_quantity
+                // console.log("You chose: ADD TO INVENTORY.")
                 addInventory();
-                console.log("You chose: ADD TO INVENTORY.")
 
             } else if (choice.stockMgmnt === "ADD NEW PRODUCT") {
-                // or call the fifth function, which exits the storefront
-                // userExit();
-                console.log("You chose: ADD NEW PRODUCT.")
+                // call function that adds a brand new item into the inventory
+                // console.log("You chose: ADD NEW PRODUCT.")
+                addItem();
+
+            } else if (choice.stockMgmnt === "EXIT INVENTORY MANAGER") {
+                // call function that adds a brand new item into the inventory
+                // console.log("You chose: EXIT INVENTORY MANAGER.")
+                managerExit();
 
             } else {
                 console.log("Please enter a valid selection.")
@@ -79,6 +84,7 @@ function managerMenu() {
         });
 
 }
+
 
 
 // =======================================================================================
@@ -160,10 +166,6 @@ function viewLowStock() {
         // call the initial Manager's Menu function
         managerMenu();
     });
-
-    // // make sure to disconnect from the database at a functional end point
-    // connection.end();
-    // return;
 
 };
 
@@ -256,3 +258,109 @@ function addInventory() {
     }); // end connection.query(SELECT *)
 
 }; // end addInventory()
+
+
+
+// =======================================================================================
+// 4. ADD NEW PRODUCT - ALLOWS THE ADDITION OF A NEW ITEM TO THE STORE
+// =======================================================================================
+
+function addItem() {
+
+    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
+    console.log(chalk.blue(' ENTER THE FOLLOWING INFORMATION TO ADD A NEW PRODUCT TO THE INVENTORY LIST:'));
+    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+
+
+    inquirer
+        .prompt([{
+                name: "dept",
+                type: "input",
+                message: chalk.magenta("Enter the item's department (i.e. prints):"),
+            },
+            {
+                name: "name",
+                type: "input",
+                message: chalk.magenta("Enter the title of the artwork:"),
+            },
+            {
+                name: "artist",
+                type: "input",
+                message: chalk.magenta("Enter the artist's name:"),
+            },
+            {
+                name: "price",
+                type: "input",
+                message: chalk.magenta("Enter the retail price of the item (i.e., 19.99):"),
+                validate: function (input) {
+                    input = input.replace(/\s+/g, "");
+                    if (isFinite(input) && input != '') {
+                        return true;
+                    }
+                    return false;
+                }
+            },
+            {
+                name: "quantity",
+                type: "input",
+                message: chalk.magenta("Enter the quantity of the item now in stock:"),
+                validate: function (value) {
+                    if (isNaN(value) === false) {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        ])
+        .then(function (newItem) {
+
+            // connection query to insert the VALUES of the new item
+            connection.query("INSERT INTO products SET ?", {
+                    department: newItem.dept,
+                    product_name: newItem.name,
+                    artist_name: newItem.artist,
+                    retail_price: newItem.price,
+                    stock_quantity: newItem.quantity
+                },
+                function (err, res4) {
+                    if (err) throw err;
+
+                    // follow-up connection query to confirm addition of new item, and to return its auto_incremented item_id number
+                    connection.query("SELECT * FROM products WHERE ?", {
+                            product_name: newItem.name
+                        },
+                        function (err, res5) {
+                            if (err) throw err;
+
+                            console.log(chalk.blue('\n SUCCESS! You have added the following new product to inventory:'));
+                            console.log(chalk.blue('\n--------------------------------------------------------------------'));
+                            console.log(chalk.magenta('item# | price | title and artist | (quantity in stock)'));
+                            console.log(chalk.blue('--------------------------------------------------------------------\n'));
+
+                            console.log("   " + chalk.gray(res5[0].item_id) + "   " + res5[0].retail_price + "   " + chalk.yellow(res5[0].product_name) + " by " + chalk.greenBright(res5[0].artist_name) + " " + chalk.gray("(" + res5[0].stock_quantity + ")") + "\n");
+
+                            // call the initial Manager's Menu function
+                            managerMenu();
+
+                        }); // end connection.query(SELECT *) new select all to confirm updated quantity
+
+                }); // end connection.query(UPDATE)
+
+        }); // end inquirer
+
+}; // end addItem()
+
+
+// =======================================================================================
+// 5. MANAGER EXIT - EXIT THE MANAGEMENT FUNCTION
+// =======================================================================================
+
+function managerExit() {
+
+    console.log(chalk.red("\nYou have now logged out of the Fine Art Mart INVENTORY MANAGER.\n"));
+
+    // make sure to disconnect from the database at a functional end point
+    connection.end();
+    return;
+};
