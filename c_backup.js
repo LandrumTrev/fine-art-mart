@@ -40,7 +40,7 @@ connection.connect(function (err) {
 function displayInventory() {
 
     // connect to database and get all items from the products table
-    connection.query("SELECT * FROM products ORDER BY department, retail_price", function (err, res) {
+    connection.query("SELECT * FROM products", function (err, res) {
 
         if (err) throw err;
 
@@ -49,7 +49,7 @@ function displayInventory() {
         console.log(chalk.yellow('\n Welcome to FINE ART MART! \n'));
         console.log(chalk.blue(' Here is a list of fine art reproductions we currently have in stock:'));
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
+        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock)'));
         console.log(chalk.blue('--------------------------------------------------------------------\n'));
 
         // call a FOR LOOP on (res) to console.log all items in inventory
@@ -84,7 +84,7 @@ function buyersQuery(res) {
         .prompt([{
                 name: "item",
                 type: "input",
-                message: chalk.magenta("Please enter the item number of the piece you wish to purchase:"),
+                message: chalk.magenta("Please enter the item number of the print you wish to purchase:"),
                 validate: function (value) {
                     if (isNaN(value) === false && value < (res.length + 1) && value > 0) {
                         return true;
@@ -96,7 +96,7 @@ function buyersQuery(res) {
             {
                 name: "quantity",
                 type: "input",
-                message: chalk.cyan("Please enter how many copies of this piece you wish to purchase:"),
+                message: chalk.cyan("Please enter how many copies of this print you wish to purchase:"),
                 validate: function (value) {
                     if (isNaN(value) === false) {
                         return true;
@@ -106,34 +106,15 @@ function buyersQuery(res) {
             }
         ])
         .then(function (answer) {
-            // this (answer) will be passed through the rest of the app
-            // to keep track of the current item# and quantity selected for purchase
-
-            // match the item number entered by customer to an item with that item_id
-            var theItem = function () {
-                for (let p = 0; p < res.length; p++) {
-                    var itemMatch;
-                    var idNumber = res[p].item_id;
-                    var answerItem = parseInt(answer.item);
-                    if (idNumber === answerItem) {
-                        itemMatch = res[p];
-                    }
-                }
-                return itemMatch;
-            };
-            
-            // item now represents the whole object of the item the customer has selected
-            var item = theItem();
-            // console.log(item);
 
             // tell the customer the item and quantity they chose
-            console.log("\nYou selected " + chalk.magenta(answer.quantity) + " " + chalk.yellow(item.product_name) + " " + item.department + " by " + chalk.greenBright(item.artist_name));
+            console.log("\nYou selected " + chalk.yellow(answer.quantity) + " copies of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name));
 
             // check to see if the quantity requested exceeds the number of items in inventory
-            if (answer.quantity > item.stock_quantity) {
+            if (answer.quantity > res[answer.item - 1].stock_quantity) {
 
                 // if the customer wants more items than exist in inventory, then
-                console.log("\nWe're sorry, but we only have " + chalk.magenta(item.stock_quantity) + " " + chalk.yellow(item.product_name) + " " + item.department + " by " + chalk.greenBright(item.artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(item.stock_quantity) + ".\n");
+                console.log("\nWe're sorry, but we only have " + chalk.yellow(res[answer.item - 1].stock_quantity) + " copies of " + chalk.yellow(res[answer.item - 1].product_name) + " by " + chalk.greenBright(res[answer.item - 1].artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(res[answer.item - 1].stock_quantity) + ".\n");
 
                 // send them back to the item and quantity input prompt (self-ref this function)
                 // pass in the Array of inventory objects, so customer can still select from it
@@ -142,16 +123,12 @@ function buyersQuery(res) {
             } else {
 
                 // otherwise, if the quantity of the order can be fulfilled based on inventory available
-                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + Math.round(((item.retail_price * answer.quantity) + 0.00001) * 100) / 100) + " (" + answer.quantity + " @ $" + item.retail_price + " each)\n");
+                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + Math.round(((res[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100) + " (" + answer.quantity + " @ $" + res[answer.item - 1].retail_price + " each)\n");
 
                 // send them on to the (3rd function) final order confirmation choice,
                 // which offers the choices: PLACE ORDER, EDIT SELECTION, or EXIT
                 // pass in both the inventory object array, and answers (item and quant) from this inquirer
-                finalChoice(res, answer, item);
-
-                // connection.end();
-                // return;
-
+                finalChoice(res, answer);
             }
         });
 }
@@ -164,8 +141,7 @@ function buyersQuery(res) {
 
 // pass in (res) the inventory object array, 
 // and (answer) the customer's item and quantity data
-// and (item) the whole object for the current item selected
-function finalChoice(res, answer, item) {
+function finalChoice(res, answer) {
 
     // ask the user to either confirm order, change order, or exit
     inquirer
@@ -181,8 +157,8 @@ function finalChoice(res, answer, item) {
 
             if (choice.finalchoice === "PLACE ORDER") {
                 // call the fourth function, which completes the order
-                // pass in the objects of the item selected, as well as item and quantity data
-                placeOrder(answer, item);
+                // pass in the inventory objects array, as well as item and quantity data
+                placeOrder(res, answer);
             } else if (choice.finalchoice === "EDIT SELECTION") {
                 // or call the item and quantity input function again
                 // pass the inventory objects array back into the input function
@@ -206,13 +182,12 @@ function finalChoice(res, answer, item) {
 
 // call as final step in placing order
 // continuing to pass along the (res) inventory list and (answer) item and quantity data
-function placeOrder(answer, item) {
+function placeOrder(res, answer) {
 
     // make a call to the database, and reduce the stock_quantity of the item ordered by the ordered quantity
     connection.query("UPDATE products SET ? WHERE ?",
         [{
-                stock_quantity: item.stock_quantity - answer.quantity,
-                product_sales: item.product_sales + (Math.round(((item.retail_price * answer.quantity) + 0.00001) * 100) / 100)
+                stock_quantity: res[answer.item - 1].stock_quantity - answer.quantity
             },
             {
                 item_id: answer.item
@@ -241,54 +216,33 @@ function orderConfirm(answer) {
     // call the database, and get a new set of all items with quantities updated, called (finalRes)
     connection.query("SELECT * FROM products", function (err, finalRes) {
 
-        if (err) throw err;
+            if (err) throw err;
 
-        // again, match the item number entered by customer to the now updated item with that item_id
-        var itemSale = function () {
-            for (let p = 0; p < finalRes.length; p++) {
-                var itemMatch;
-                var idNumber = finalRes[p].item_id;
-                var answerItem = parseInt(answer.item);
-                if (idNumber === answerItem) {
-                    itemMatch = finalRes[p];
-                }
-            }
-            return itemMatch;
-        };
+            // tell the customer how much they have been charged for their order
+            console.log(chalk.green("\nThank you for your order. Your account has been charged ") + chalk.yellow("$" + Math.round(((finalRes[answer.item - 1].retail_price * answer.quantity) + 0.00001) * 100) / 100));
 
-        // itemSold replaces item as the entire object of the customer's selected item,
-        // now with an updated quantity (previous quant minus customer's purchased quant)
-        var itemSold = itemSale();
-        // console.log(itemSold);
+            // tell the customer how many prints of the item they ordered now remain in stock
+            console.log("\nIf need more copies of this item, we now have " + chalk.yellow(finalRes[answer.item - 1].stock_quantity) + " prints of " + chalk.yellow(finalRes[answer.item - 1].product_name) + " by " + chalk.greenBright(finalRes[answer.item - 1].artist_name) + " left in stock.\n");
 
-        // tell the customer how much they have been charged for their order
-        console.log(chalk.green("\nThank you for your order. Your account has been charged ") + chalk.yellow("$" + Math.round(((itemSold.retail_price * answer.quantity) + 0.00001) * 100) / 100));
+            // ask the customer if they want to place another order
+            inquirer
+                .prompt({
+                    name: "buymore",
+                    type: "confirm",
+                    message: "Would you like to place another order?"
+                })
+                .then(function (yesno) {
 
-        // tell the customer how many prints of the item they ordered now remain in stock
-        console.log("\nIf need more copies of this item, we now have " + chalk.magenta(itemSold.stock_quantity) + " " + chalk.yellow(itemSold.product_name) + " " + itemSold.department + " by " + chalk.greenBright(itemSold.artist_name) + " left in stock.\n");
+                    if (yesno.buymore === true) {
+                        // call the item and quantity input again, and pass it the updated inventory array
+                        buyersQuery(finalRes);
+                    } else {
+                        // call the userExit() function and say goodbye
+                        userExit();
+                    }
+                });
 
-        // ADMIN - check for correct updates to the product_sales fields
-        console.log("Total Sales for " + chalk.yellow(itemSold.product_name) + " " + itemSold.department + " by " + chalk.greenBright(itemSold.artist_name) + " are " + chalk.yellow("$" + itemSold.product_sales));
-
-        // ask the customer if they want to place another order
-        inquirer
-            .prompt({
-                name: "buymore",
-                type: "confirm",
-                message: "Would you like to place another order?"
-            })
-            .then(function (yesno) {
-
-                if (yesno.buymore === true) {
-                    // call the item and quantity input again, and pass it the updated inventory array
-                    buyersQuery(finalRes);
-                } else {
-                    // call the userExit() function and say goodbye
-                    userExit();
-                }
-            });
-
-    });
+        });
 
 };
 
