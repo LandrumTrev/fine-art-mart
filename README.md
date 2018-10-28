@@ -11,6 +11,7 @@ _________________________________________________
 
 #### Fine Art Mart is a multi-sectional application, composed of a public-facing customer storefront application (customer.js), and an inventory manager application for internal use (manager.js). 
 
+### STOREFRONT
 In the customer.js application, the user is greeted with a welcome message and a price list of all available art reproductions in stock (item number, price, title, artist, and quantity in stock). At the end of the price list, inquirer is utilized to prompt the customer for the item number of the print they wish to purchase. After entering the item number, they are asked how many copies of the print they wish to purchase. 
 
 After selecting the quantity to purchase, a confirmation message appears with quantity, title, and artist name of thier purchase. Another line compliments their choice and displays the total purchase price, in addition to a breakdown of quantity @ price each.
@@ -35,6 +36,7 @@ $ node customer
 ```
 _________________________________________________
 
+### INVENTORY MANAGER
 In addition to the storefront application, Fine Art Mart also features a separate Inventory Manager application (manager.js). 
 
 Upon logging into the Inventory Manager, the manager is presented with a menu featuring five options:
