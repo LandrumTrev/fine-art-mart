@@ -87,17 +87,17 @@ function managerMenu() {
 // display a full list of all items in inventory and all info about each item
 function displayForSale() {
 
-    // fetch all items from the products table in db
-    connection.query("SELECT * FROM products", function (err, res) {
+    // connect to database and get all items from the products table
+    connection.query("SELECT * FROM products ORDER BY department, retail_price", function (err, res) {
 
         if (err) throw err;
 
         // list header display messages
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
-        console.log(chalk.blue(' ALL ITEMS CURRENTLY IN THE FINE ART MART INVENTORY:'));
+        console.log(chalk.yellow('\n Welcome to FINE ART MART! \n'));
+        console.log(chalk.blue(' Here is a list of fine art reproductions we currently have in stock:'));
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock)'));
+        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
         console.log(chalk.blue('--------------------------------------------------------------------\n'));
 
         // call a FOR LOOP on (res) to console.log all items in inventory
@@ -108,8 +108,7 @@ function displayForSale() {
                 itemNo = "0" + itemNo;
             }
 
-            // format for each list item in the loop to display
-            console.log("   " + chalk.gray(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(" + res[i].stock_quantity + ")") + "\n");
+            console.log("   " + chalk.magenta(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(x" + res[i].stock_quantity + ")") + " " + chalk.gray(res[i].department) + "\n");
         }
 
         console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
@@ -138,7 +137,7 @@ function viewLowStock() {
         console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
         console.log(chalk.blue(' THE FOLLOWING ITEMS HAVE QUANTITIES OF LESS THAN 10 IN STOCK:'));
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock)'));
+        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
         console.log(chalk.blue('--------------------------------------------------------------------\n'));
 
         // call a FOR LOOP on (res) to console.log all items in inventory
@@ -152,7 +151,7 @@ function viewLowStock() {
             // only display detail for items with an inventory stock quantity less than 10
             if (res[i].stock_quantity < 10) {
 
-                console.log("   " + chalk.gray(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(" + res[i].stock_quantity + ")") + "\n");
+                console.log("   " + chalk.magenta(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(x" + res[i].stock_quantity + ")") + " " + chalk.gray(res[i].department) + "\n");
 
             }
         }
@@ -213,9 +212,25 @@ function addInventory() {
             ])
             .then(function (stock) {
 
+                // match the item number indicated by manager to the item with that item_id
+                var updatedItem = function () {
+                    for (let p = 0; p < res.length; p++) {
+                        var itemMatch;
+                        var idNumber = res[p].item_id;
+                        var answerItem = parseInt(stock.stockItem);
+                        if (idNumber === answerItem) {
+                            itemMatch = res[p];
+                        }
+                    }
+                    return itemMatch;
+                };
+                // itemNewQuant represents the whole object of the item to update quantity on
+                var itemNewQuant = updatedItem();
+                console.log(itemNewQuant);
+
                 // the new quantity to SET is the # of items added + current # of items in stock
                 // needs parseInt() as these raw values are Strings (numbers concatenate instead of add w/o parseInt)
-                var newQuantity = parseInt(stock.stockQuantity) + parseInt(res[stock.stockItem - 1].stock_quantity);
+                var newQuantity = parseInt(stock.stockQuantity) + parseInt(itemNewQuant.stock_quantity);
 
                 console.log(newQuantity);
 
@@ -225,7 +240,7 @@ function addInventory() {
                             stock_quantity: newQuantity
                         },
                         {
-                            item_id: stock.stockItem
+                            item_id: itemNewQuant.item_id
                         }
                     ],
                     function (err, res2) {
@@ -233,18 +248,18 @@ function addInventory() {
                         if (err) throw err;
 
                         // tell the manager the item and number of items added
-                        console.log("\nYou have added " + chalk.yellow(stock.stockQuantity) + " copies of " + chalk.yellow(res[stock.stockItem - 1].product_name) + " by " + chalk.greenBright(res[stock.stockItem - 1].artist_name));
+                        console.log("\nYou have added " + chalk.yellow(stock.stockQuantity) + " copies of " + chalk.yellow(itemNewQuant.product_name) + " " + itemNewQuant.department + " by " + chalk.greenBright(itemNewQuant.artist_name));
 
                         // third connection query to confirm new stock quantity number
                         connection.query("SELECT * FROM products WHERE ?", {
-                                item_id: stock.stockItem
+                                item_id: itemNewQuant.item_id
                             },
                             function (err, res3) {
 
                                 if (err) throw err;
 
                                 // confirm the updated item's quantity with data from a fresh mySQL SELECT
-                                console.log("\nThere are now a total of " + chalk.yellow(res3[0].stock_quantity) + " copies of " + chalk.yellow(res3[0].product_name) + " by " + chalk.greenBright(res3[0].artist_name) + " in stock.");
+                                console.log("\nThere are now a total of " + chalk.yellow(res3[0].stock_quantity) + " copies of " + chalk.yellow(res3[0].product_name) + " " + res3[0].department + " by " + chalk.greenBright(res3[0].artist_name) + " in stock.");
 
                                 // call the initial Manager's Menu function
                                 managerMenu();
@@ -326,7 +341,7 @@ function addItem() {
                     retail_price: newItem.price,
                     stock_quantity: newItem.quantity
                 },
-                function (err, res4) {
+                function (err, resA) {
 
                     if (err) throw err;
 
@@ -335,15 +350,15 @@ function addItem() {
                     connection.query("SELECT * FROM products WHERE ?", {
                             product_name: newItem.name
                         },
-                        function (err, res5) {
+                        function (err, resB) {
                             if (err) throw err;
 
                             console.log(chalk.blue('\n SUCCESS! You have added the following new product to inventory:'));
                             console.log(chalk.blue('\n--------------------------------------------------------------------'));
-                            console.log(chalk.magenta('item# | price | title and artist | (quantity in stock)'));
+                            console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
                             console.log(chalk.blue('--------------------------------------------------------------------\n'));
 
-                            console.log("   " + chalk.gray(res5[0].item_id) + "   " + res5[0].retail_price + "   " + chalk.yellow(res5[0].product_name) + " by " + chalk.greenBright(res5[0].artist_name) + " " + chalk.gray("(" + res5[0].stock_quantity + ")") + "\n");
+                            console.log("   " + chalk.gray(resB[0].item_id) + "   " + resB[0].retail_price + "   " + chalk.yellow(resB[0].product_name) + " " + resB[0].department + " by " + chalk.greenBright(resB[0].artist_name) + " " + chalk.gray("(" + resB[0].stock_quantity + ")") + " " + chalk.gray(resB[i].department) + "\n");
 
                             // call the initial Manager's Menu function
                             managerMenu();

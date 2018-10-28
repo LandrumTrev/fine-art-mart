@@ -60,7 +60,7 @@ function displayInventory() {
                 itemNo = "0" + itemNo;
             }
 
-            console.log("   " + chalk.gray(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(" + res[i].stock_quantity + ")") + "\n");
+            console.log("   " + chalk.magenta(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(x" + res[i].stock_quantity + ")") + " " + chalk.gray(res[i].department) + "\n");
         }
 
         console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
