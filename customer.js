@@ -36,10 +36,15 @@ connection.connect(function (err) {
 // FIRST FUNCTION, CALLED BY .connect(). DISPLAYS THE INVENTORY LIST
 // =======================================================================================
 
+// call function to display a full list of all items available for purchase
 function displayInventory() {
+
+    // connect to database and get all items from the products table
     connection.query("SELECT * FROM products", function (err, res) {
+
         if (err) throw err;
 
+        // list header display messages
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
         console.log(chalk.yellow('\n Welcome to FINE ART MART! \n'));
         console.log(chalk.blue(' Here is a list of fine art reproductions we currently have in stock:'));
@@ -59,8 +64,6 @@ function displayInventory() {
         }
 
         console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
-
-        // =======================================================================================
 
         // after display inventory, call function that asks item and quantity to purchase
         // and pass in (res), which is an array of all inventory objects
@@ -126,12 +129,10 @@ function buyersQuery(res) {
                 // which offers the choices: PLACE ORDER, EDIT SELECTION, or EXIT
                 // pass in both the inventory object array, and answers (item and quant) from this inquirer
                 finalChoice(res, answer);
-
             }
-
         });
-
 }
+
 
 
 // =======================================================================================
@@ -179,6 +180,8 @@ function finalChoice(res, answer) {
 // UPDATES THE QUANTITY OF THE ITEM IN THE DATABASE, THEN CALLS orderConfirm()
 // =======================================================================================
 
+// call as final step in placing order
+// continuing to pass along the (res) inventory list and (answer) item and quantity data
 function placeOrder(res, answer) {
 
     // make a call to the database, and reduce the stock_quantity of the item ordered by the ordered quantity
@@ -198,8 +201,8 @@ function placeOrder(res, answer) {
             orderConfirm(answer);
 
         });
-
 };
+
 
 
 // =======================================================================================
@@ -212,6 +215,7 @@ function orderConfirm(answer) {
 
     // call the database, and get a new set of all items with quantities updated, called (finalRes)
     connection.query("SELECT * FROM products", function (err, finalRes) {
+
             if (err) throw err;
 
             // tell the customer how much they have been charged for their order
@@ -248,6 +252,7 @@ function orderConfirm(answer) {
 // SIXTH FUNCTION, WHEN USER DECIDES TO EXIT STORE
 // =======================================================================================
 
+// call when the customer is finished shopping and ready to leave the store
 function userExit() {
 
     console.log(chalk.red("\nThank you for visiting Fine Art Mart. Please come again soon.\n"));
