@@ -4,6 +4,8 @@
 -- University of Richmond (Virginia)
 -- Full Stack Developer Bootcamp (July 2018)
 -- ====================================================
+-- SQL Schema and Seeds
+-- ====================================================
 
 DROP DATABASE IF EXISTS fineartmart_db;
 CREATE DATABASE fineartmart_db;
