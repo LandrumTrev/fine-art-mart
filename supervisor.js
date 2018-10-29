@@ -84,103 +84,71 @@ function supervisorMenu() {
 function viewSalesByDept() {
 
 
-    // connect to database and get the SUM of all product_sales by department
-    connection.query("SELECT department, SUM(product_sales) AS total_sales FROM products GROUP BY department", function (err, sales) {
+    // connect to database and get the SUM of all product_sales, GROUP BY department
+    connection.query("SELECT dept_id, department, SUM(product_sales) AS dept_sales, overhead_costs, SUM(product_sales) - overhead_costs AS total_profit FROM departments RIGHT JOIN products ON products.department = departments.dept_name GROUP BY department, dept_id", function (err, depts) {
 
-        // console.log(sales);
-        // console.log(sales[0].department);
-        // console.log(sales[0].total_sales);
+        // console.log(depts);
 
-        var deptSalesArray = [];
+        // table headings cliui code
+        ui.div({
+            text: chalk.green("\nDept ID\n"),
+            width: 10,
+            padding: [0, 0, 0, 0]
+        }, {
+            text: chalk.green("\nDepartment\n"),
+            width: 20,
+            padding: [0, 0, 0, 0]
+        }, {
+            text: chalk.green("\nDept Sales\n"),
+            width: 20,
+            padding: [0, 0, 0, 0]
+        }, {
+            text: chalk.green("\nOverhead\n"),
+            width: 20,
+            padding: [0, 0, 0, 0]
+        }, {
+            text: chalk.green("\nTotal Profit\n"),
+            width: 20,
+            padding: [0, 0, 0, 0]
+        });
 
-        for (let p = 0; p < sales.length; p++) {
+        // loop through each dept in "departments" table
+        for (let d = 0; d < depts.length; d++) {
 
-            var deptSales = {[sales[p].department]: sales[p].total_sales};
+            // variable for data object returned for each department
+            var dep = depts[d];
 
-            deptSalesArray.push(deptSales);
+            // each department's row cliui code
+            ui.div({
+                text: dep.dept_id,
+                width: 10,
+                padding: [0, 0, 0, 0]
+            }, {
+                text: dep.department,
+                width: 20,
+                padding: [0, 0, 0, 0]
+            }, {
+                text: dep.dept_sales,
+                width: 20,
+                padding: [0, 0, 0, 0]
+            }, {
+                text: dep.overhead_costs,
+                width: 20,
+                padding: [0, 0, 0, 0]
+            }, {
+                text: dep.total_profit,
+                width: 20,
+                padding: [0, 0, 0, 0]
+            });
+
 
         }
 
-        // console.log(deptSalesArray);
-        // console.log(deptSalesArray[0]);
-        console.log(Object.keys(deptSalesArray[0]) + " " + Object.values(deptSalesArray[0]));
-        console.log(Object.keys(deptSalesArray[1]) + " " + Object.values(deptSalesArray[1]));
+        ui.div('');
+        console.log(ui.toString());
 
         connection.end();
         return;
 
     });
-
-
-
-    // // connect to database and get all items from the products table
-    // connection.query("SELECT * FROM departments", function (err, resDept) {
-
-    //     if (err) throw err;
-
-    //     // table headings cliui code
-    //     ui.div({
-    //         text: chalk.green("\nDept ID\n"),
-    //         width: 10,
-    //         padding: [0, 0, 0, 0]
-    //     }, {
-    //         text: chalk.green("\nDept Name\n"),
-    //         width: 20,
-    //         padding: [0, 0, 0, 0]
-    //     }, {
-    //         text: chalk.green("\nOverhead Costs\n"),
-    //         width: 20,
-    //         padding: [0, 0, 0, 0]
-    //     }, {
-    //         text: chalk.green("\nProduct Sales\n"),
-    //         width: 20,
-    //         padding: [0, 0, 0, 0]
-    //     }, {
-    //         text: chalk.green("\nTotal Profit\n"),
-    //         width: 20,
-    //         padding: [0, 0, 0, 0]
-    //     });
-
-    //     // loop through each dept in "departments" table
-    //     for (let d = 0; d < resDept.length; d++) {
-
-    //         // department variable for each dept looped
-    //         var department = resDept[d];
-
-    //         // each department's row cliui code
-    //         ui.div({
-    //             text: department.dept_id,
-    //             width: 10,
-    //             padding: [0, 0, 0, 0]
-    //         }, {
-    //             text: department.dept_name,
-    //             width: 20,
-    //             padding: [0, 0, 0, 0]
-    //         }, {
-    //             text: department.overhead_costs,
-    //             width: 20,
-    //             padding: [0, 0, 0, 0]
-    //         }, {
-    //             text: department.overhead_costs,
-    //             width: 20,
-    //             padding: [0, 0, 0, 0]
-    //         }, {
-    //             text: department.overhead_costs,
-    //             width: 20,
-    //             padding: [0, 0, 0, 0]
-    //         });
-
-
-    //     }
-
-    //     ui.div('');
-    //     console.log(ui.toString());
-
-
-
-    // });
-
-    // connection.end();
-    // return;
-
 };
