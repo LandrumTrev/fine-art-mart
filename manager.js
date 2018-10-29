@@ -15,6 +15,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var chalk = require('chalk');
+var ui = require('cliui')();
 
 
 var connection = mysql.createConnection({
@@ -41,9 +42,9 @@ connection.connect(function (err) {
 function managerMenu() {
 
     // header display messages
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    console.log(chalk.blue('\n-------------------------------------------------------------------------------'));
     console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER'));
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    console.log(chalk.blue('\n-------------------------------------------------------------------------------'));
 
     // ask the manager which inventory control function to access
     inquirer
@@ -80,7 +81,12 @@ function managerMenu() {
             } else {
                 console.log("Please enter a valid selection.")
             }
+
         });
+
+    // tell cliui to output all ui.div
+    // console.log(ui.toString());
+
 }
 
 
@@ -98,12 +104,36 @@ function displayForSale() {
         if (err) throw err;
 
         // list header display messages
-        console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
-        console.log(chalk.blue(' THE FOLLOWING ARE ALL ITEMS CURRENTLY IN INVENTORY:'));
-        console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
-        console.log(chalk.blue('--------------------------------------------------------------------\n'));
+        ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+        ui.div(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
+        ui.div(chalk.red(' THE FOLLOWING ARE ALL ITEMS CURRENTLY IN INVENTORY:'));
+        ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+
+        // create structured table headings using cliui
+        ui.div({
+            text: chalk.magenta("#"),
+            width: 4
+        }, {
+            text: chalk.magenta("price"),
+            width: 8
+        }, {
+            text: chalk.magenta("title"),
+            width: 30
+        }, {
+            text: chalk.magenta("artist"),
+            width: 20
+        }, {
+            text: chalk.magenta("department"),
+            width: 12
+        }, {
+            text: chalk.magenta("stock"),
+            width: 9
+        });
+
+
+        // console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
+
+        ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
 
         // call a FOR LOOP on (res) to console.log all items in inventory
         for (let i = 0; i < res.length; i++) {
@@ -113,13 +143,38 @@ function displayForSale() {
                 itemNo = "0" + itemNo;
             }
 
-            console.log("   " + chalk.magenta(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(x" + res[i].stock_quantity + ")") + " " + chalk.gray(res[i].department) + "\n");
+            // output a structured table row for each dept using cliui
+            ui.div({
+                text: chalk.magenta(itemNo),
+                width: 4
+            }, {
+                text: res[i].retail_price,
+                width: 8
+            }, {
+                text: chalk.yellow(res[i].product_name),
+                width: 30
+            }, {
+                text: chalk.green(res[i].artist_name),
+                width: 20
+            }, {
+                text: chalk.gray(res[i].department),
+                width: 12
+            }, {
+                text: chalk.gray(res[i].stock_quantity),
+                width: 9
+            });
+
+            // create a blank line spacer between each row
+            ui.div('');
+
         }
 
-        console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
+        // tell cliui to output all ui.div
+        console.log(ui.toString());
 
         // call the Inventory Management Menu function
         managerMenu();
+
     });
 };
 
@@ -138,36 +193,84 @@ function viewLowStock() {
         if (err) throw err;
 
         // list header display messages
-        console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
-        console.log(chalk.blue(' THE FOLLOWING ITEMS HAVE QUANTITIES OF LESS THAN 10 IN STOCK:'));
-        console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
-        console.log(chalk.blue('--------------------------------------------------------------------\n'));
+        ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+        ui.div(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
+        ui.div(chalk.red(' THE FOLLOWING ITEMS HAVE QUANTITIES OF LESS THAN 10 IN STOCK:'));
+        ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+
+        // create structured table headings using cliui
+        ui.div({
+            text: chalk.magenta("#"),
+            width: 4
+        }, {
+            text: chalk.magenta("price"),
+            width: 8
+        }, {
+            text: chalk.magenta("title"),
+            width: 30
+        }, {
+            text: chalk.magenta("artist"),
+            width: 20
+        }, {
+            text: chalk.magenta("department"),
+            width: 12
+        }, {
+            text: chalk.magenta("stock"),
+            width: 9
+        });
+
+
+        ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
 
         // call a FOR LOOP on (res) to console.log all items in inventory
-        for (let i = 0; i < res.length; i++) {
+        for (let h = 0; h < res.length; h++) {
 
-            var itemNo = res[i].item_id;
+            var itemNo = res[h].item_id;
             if (itemNo < 10) {
                 itemNo = "0" + itemNo;
             }
 
             // only display detail for items with an inventory stock quantity less than 10
-            if (res[i].stock_quantity < 10) {
+            if (res[h].stock_quantity < 10) {
 
-                console.log("   " + chalk.magenta(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(x" + res[i].stock_quantity + ")") + " " + chalk.gray(res[i].department) + "\n");
+                // output a structured table row for each dept using cliui
+                ui.div({
+                    text: chalk.magenta(itemNo),
+                    width: 4
+                }, {
+                    text: res[h].retail_price,
+                    width: 8
+                }, {
+                    text: chalk.yellow(res[h].product_name),
+                    width: 30
+                }, {
+                    text: chalk.green(res[h].artist_name),
+                    width: 20
+                }, {
+                    text: chalk.gray(res[h].department),
+                    width: 12
+                }, {
+                    text: chalk.gray(res[h].stock_quantity),
+                    width: 9
+                });
 
-            }
-        }
+                // create a blank line spacer between each row
+                ui.div('');
 
-        console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
+            } // end if
+
+        } // end for loop
+
+        // tell cliui to output all ui.div5
+        console.log(ui.toString());
 
         // call the Inventory Management Menu function
         managerMenu();
-    });
 
-};
+    }); // end connection.query
+
+}; // end viewLowStock()
+
 
 
 // =======================================================================================
@@ -178,10 +281,13 @@ function viewLowStock() {
 function addInventory() {
 
     // header display messages
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    console.log(chalk.blue('\n-------------------------------------------------------------------------------'));
     console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
     console.log(chalk.blue(' ENTER THE ITEM NUMBER AND NUMBER OF PRODUCTS TO INCREASE ITS INVENTORY:'));
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    console.log(chalk.blue('\n-------------------------------------------------------------------------------'));
+
+    // tell cliui to output all ui.div5
+    // console.log(ui.toString());
 
     // first connection called so inquirer's validate function can make sure that
     // manager is choosing an existing stock item number to update
@@ -194,7 +300,7 @@ function addInventory() {
             .prompt([{
                     name: "stockItem",
                     type: "input",
-                    message: chalk.magenta("Enter the product's item#:"),
+                    message: chalk.magenta("Enter the product's item #:"),
                     validate: function (value) {
                         if (isNaN(value) === false && value < (res.length + 1) && value > 0) {
                             return true;
@@ -231,13 +337,13 @@ function addInventory() {
                 };
                 // itemNewQuant represents the whole object of the item to update quantity on
                 var itemNewQuant = updatedItem();
-                console.log(itemNewQuant);
+                // console.log(itemNewQuant);
 
                 // the new quantity to SET is the # of items added + current # of items in stock
                 // needs parseInt() as these raw values are Strings (numbers concatenate instead of add w/o parseInt)
                 var newQuantity = parseInt(stock.stockQuantity) + parseInt(itemNewQuant.stock_quantity);
 
-                console.log(newQuantity);
+                // console.log(newQuantity);
 
                 // second connection query is called to UPDATE the stock_quantity of the item_id
                 connection.query("UPDATE products SET ? WHERE ?",
@@ -289,10 +395,13 @@ function addInventory() {
 function addItem() {
 
     // header display messages
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
-    console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
-    console.log(chalk.blue(' ENTER THE FOLLOWING INFORMATION TO ADD A NEW PRODUCT TO THE INVENTORY LIST:'));
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+    ui.div(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
+    ui.div(chalk.blue(' ENTER THE FOLLOWING INFORMATION TO ADD A NEW PRODUCT TO THE INVENTORY LIST:'));
+    ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+
+    // tell cliui to output all ui.div5
+    console.log(ui.toString());
 
     // ask for all the details to enter about an item
     // department and name (of artwork) are required
@@ -389,5 +498,5 @@ function managerExit() {
 
     // make sure to disconnect from the database at a functional end point
     connection.end();
-    return;
+    // return;
 };

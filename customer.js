@@ -15,6 +15,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var chalk = require('chalk');
+var ui = require('cliui')();
 
 
 var connection = mysql.createConnection({

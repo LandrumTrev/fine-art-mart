@@ -4,7 +4,7 @@
 // University of Richmond (Virginia)
 // Full Stack Developer Bootcamp (July 2018)
 // ====================================================
-// SUPERVISOR.JS - DEPARTMENT MANAGEMENT APPLICATION
+// SUPERVISOR.JS - DEPARTMENT MANAGEMENT BACK-END
 // ====================================================
 
 
