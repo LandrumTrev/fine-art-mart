@@ -40,6 +40,11 @@ connection.connect(function (err) {
 
 function managerMenu() {
 
+    // header display messages
+    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER'));
+    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+
     // ask the manager which inventory control function to access
     inquirer
         .prompt({
@@ -50,7 +55,7 @@ function managerMenu() {
         })
         .then(function (choice) {
 
-            console.log(choice.stockMgmnt);
+            // console.log(choice.stockMgmnt);
 
             if (choice.stockMgmnt === "VIEW PRODUCTS FOR SALE") {
                 // call function that displays all items in inventory
@@ -94,8 +99,8 @@ function displayForSale() {
 
         // list header display messages
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.yellow('\n Welcome to FINE ART MART! \n'));
-        console.log(chalk.blue(' Here is a list of fine art reproductions we currently have in stock:'));
+        console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
+        console.log(chalk.blue(' THE FOLLOWING ARE ALL ITEMS CURRENTLY IN INVENTORY:'));
         console.log(chalk.blue('\n--------------------------------------------------------------------'));
         console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
         console.log(chalk.blue('--------------------------------------------------------------------\n'));
@@ -358,7 +363,7 @@ function addItem() {
                             console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
                             console.log(chalk.blue('--------------------------------------------------------------------\n'));
 
-                            console.log("   " + chalk.gray(resB[0].item_id) + "   " + resB[0].retail_price + "   " + chalk.yellow(resB[0].product_name) + " " + resB[0].department + " by " + chalk.greenBright(resB[0].artist_name) + " " + chalk.gray("(" + resB[0].stock_quantity + ")") + " " + chalk.gray(resB[i].department) + "\n");
+                            console.log("   " + chalk.gray(resB[0].item_id) + "   " + resB[0].retail_price + "   " + chalk.yellow(resB[0].product_name) + " by " + chalk.greenBright(resB[0].artist_name) + " " + chalk.gray("(" + resB[0].stock_quantity + ")") + " " + chalk.gray(resB[0].department) + "\n");
 
                             // call the initial Manager's Menu function
                             managerMenu();
