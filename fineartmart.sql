@@ -12,13 +12,22 @@ CREATE DATABASE fineartmart_db;
 
 USE fineartmart_db;
 
+-- ====================================================
 
 CREATE TABLE departments (
     dept_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     dept_name VARCHAR(100) NOT NULL,
-    over_head_costs DECIMAL(10,2)
+    overhead_costs DECIMAL(10,2)
 );
 
+INSERT INTO departments (dept_name, overhead_costs)
+VALUES ("books", 1923.83), 
+("knicknacks", 100.00),
+("chotchkis", 2000.50),
+("cat toys", 500.21),
+("thingamabobs", 26.00);
+
+-- ====================================================
 
 CREATE TABLE products (
     item_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,

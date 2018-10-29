@@ -31,6 +31,7 @@
   "homepage": "https://github.com/LandrumTrev/fine-art-mart#readme",
   "dependencies": {
     "chalk": "^2.4.1",
+    "cliui": "^4.1.0",
     "inquirer": "^6.2.0",
     "mysql": "^2.16.0"
   }
