@@ -30,11 +30,6 @@ connection.connect(function (err) {
 
     if (err) throw err;
 
-    // console.log("Supervisor.js connected");
-    // console.log("Supervisor.js disconnecting, bye bye.");
-    // connection.end();
-    // return;
-
     // call the initial Manager's Menu function
     supervisorMenu();
 });
@@ -60,8 +55,6 @@ function supervisorMenu() {
 
             if (menu.superQuest === "VIEW PRODUCT SALES BY DEPARTMENT") {
                 // call function that displays a table of costs, sales, and profit of each department
-                // console.log("You chose VIEW PRODUCT SALES BY DEPARTMENT")
-                // connection.end();
                 viewSalesByDept();
 
             } else if (menu.superQuest === "CREATE NEW DEPARTMENT") {
@@ -90,112 +83,104 @@ function supervisorMenu() {
 
 function viewSalesByDept() {
 
-    // connect to database and get all items from the products table
-    connection.query("SELECT * FROM departments", function (err, res) {
 
-        if (err) throw err;
+    // connect to database and get the SUM of all product_sales by department
+    connection.query("SELECT department, SUM(product_sales) AS total_sales FROM products GROUP BY department", function (err, sales) {
 
-        ui.div({
-            text: chalk.green("\nDept ID\n"),
-            width: 10,
-            padding: [0, 0, 0, 0]
-        }, {
-            text: chalk.green("\nDept Name\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
-        }, {
-            text: chalk.green("\nOverhead Costs\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
-        }, {
-            text: chalk.green("\nProduct Sales\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
-        }, {
-            text: chalk.green("\nTotal Profit\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
-        });
+        // console.log(sales);
+        // console.log(sales[0].department);
+        // console.log(sales[0].total_sales);
 
+        var deptSalesArray = [];
 
-        for (let d = 0; d < res.length; d++) {
+        for (let p = 0; p < sales.length; p++) {
 
-            var element = res[d];
+            var deptSales = {[sales[p].department]: sales[p].total_sales};
 
-            ui.div({
-                text: element.dept_id,
-                width: 10,
-                padding: [0, 0, 0, 0]
-            }, {
-                text: element.dept_name,
-                width: 20,
-                padding: [0, 0, 0, 0]
-            }, {
-                text: element.overhead_costs,
-                width: 20,
-                padding: [0, 0, 0, 0]
-            }, {
-                text: element.overhead_costs,
-                width: 20,
-                padding: [0, 0, 0, 0]
-            }, {
-                text: element.overhead_costs,
-                width: 20,
-                padding: [0, 0, 0, 0]
-            });
-
+            deptSalesArray.push(deptSales);
 
         }
 
-        ui.div('');
-        console.log(ui.toString());
+        // console.log(deptSalesArray);
+        // console.log(deptSalesArray[0]);
+        console.log(Object.keys(deptSalesArray[0]) + " " + Object.values(deptSalesArray[0]));
+        console.log(Object.keys(deptSalesArray[1]) + " " + Object.values(deptSalesArray[1]));
 
-
+        connection.end();
+        return;
 
     });
 
-    connection.end();
-    return;
+
+
+    // // connect to database and get all items from the products table
+    // connection.query("SELECT * FROM departments", function (err, resDept) {
+
+    //     if (err) throw err;
+
+    //     // table headings cliui code
+    //     ui.div({
+    //         text: chalk.green("\nDept ID\n"),
+    //         width: 10,
+    //         padding: [0, 0, 0, 0]
+    //     }, {
+    //         text: chalk.green("\nDept Name\n"),
+    //         width: 20,
+    //         padding: [0, 0, 0, 0]
+    //     }, {
+    //         text: chalk.green("\nOverhead Costs\n"),
+    //         width: 20,
+    //         padding: [0, 0, 0, 0]
+    //     }, {
+    //         text: chalk.green("\nProduct Sales\n"),
+    //         width: 20,
+    //         padding: [0, 0, 0, 0]
+    //     }, {
+    //         text: chalk.green("\nTotal Profit\n"),
+    //         width: 20,
+    //         padding: [0, 0, 0, 0]
+    //     });
+
+    //     // loop through each dept in "departments" table
+    //     for (let d = 0; d < resDept.length; d++) {
+
+    //         // department variable for each dept looped
+    //         var department = resDept[d];
+
+    //         // each department's row cliui code
+    //         ui.div({
+    //             text: department.dept_id,
+    //             width: 10,
+    //             padding: [0, 0, 0, 0]
+    //         }, {
+    //             text: department.dept_name,
+    //             width: 20,
+    //             padding: [0, 0, 0, 0]
+    //         }, {
+    //             text: department.overhead_costs,
+    //             width: 20,
+    //             padding: [0, 0, 0, 0]
+    //         }, {
+    //             text: department.overhead_costs,
+    //             width: 20,
+    //             padding: [0, 0, 0, 0]
+    //         }, {
+    //             text: department.overhead_costs,
+    //             width: 20,
+    //             padding: [0, 0, 0, 0]
+    //         });
+
+
+    //     }
+
+    //     ui.div('');
+    //     console.log(ui.toString());
+
+
+
+    // });
+
+    // connection.end();
+    // return;
 
 };
-
-
-// function viewSalesByDept() {
-
-// // this is it's own line, nothing special, just prints ('this stuff')
-// ui.div('Usage: $0 [command] [options]')
-
-// // this prints 'Options:', and applies padding as # of lines or chars
-// // so 2 lines top, 0 chars right, 2 lines bottom, 0 chars left
-// ui.div({
-//     text: 'Options:',
-//     padding: [2, 0, 2, 0]
-// })
-
-// ui.div({
-//     // this prints "-f, --file" 
-//     // in a 20 char width column, 
-//     // with 4 char padding left/right
-//     text: "-f, --file",
-//     width: 20,
-//     padding: [0, 4, 0, 4]
-// }, {
-//     // this prints "the file to load." + chalk.green("more text...")
-//     // in a 20 char width column
-//     text: "the file to load." +
-//         chalk.green("(if this description is long it wraps)."),
-//     width: 20
-// }, {
-//     // this prints "[required]"
-//     // and aligns it against the right terminal window edge
-//     text: chalk.red("[required]"),
-//     align: 'right'
-// })
-
-// // this takes all of the above and prints it out to the terminal console
-// console.log(ui.toString())
-
-//     connection.end();
-//     return;
-
-// };
