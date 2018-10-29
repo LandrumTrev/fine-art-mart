@@ -59,9 +59,7 @@ function supervisorMenu() {
 
             } else if (menu.superQuest === "CREATE NEW DEPARTMENT") {
                 // call function that allows the creation of a new dept and queries initial info about it
-                console.log("You chose CREATE NEW DEPARTMENT")
-                connection.end();
-                // createNewDept();
+                createNewDept();
 
             } else if (menu.superQuest === "EXIT DEPARTMENT SUPERVISOR") {
                 // call function that disconnects from db and exits Supervisor app
@@ -89,66 +87,86 @@ function viewSalesByDept() {
 
         // console.log(depts);
 
-        // table headings cliui code
+        // create structured table headings using cliui
         ui.div({
-            text: chalk.green("\nDept ID\n"),
-            width: 10,
-            padding: [0, 0, 0, 0]
+            text: chalk.green("\nDept ID"),
+            width: 10
         }, {
-            text: chalk.green("\nDepartment\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
+            text: chalk.green("\nDepartment"),
+            width: 15
         }, {
-            text: chalk.green("\nDept Sales\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
+            text: chalk.green("\nDept Sales"),
+            width: 15
         }, {
-            text: chalk.green("\nOverhead\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
+            text: chalk.green("\nOverhead"),
+            width: 15
         }, {
-            text: chalk.green("\nTotal Profit\n"),
-            width: 20,
-            padding: [0, 0, 0, 0]
+            text: chalk.green("\nTotal Profit"),
+            width: 15
         });
 
-        // loop through each dept in "departments" table
+        // loop through each department object in (depts) array of objects
         for (let d = 0; d < depts.length; d++) {
 
             // variable for data object returned for each department
             var dep = depts[d];
 
-            // each department's row cliui code
+            // create a blank line spacer between each row
+            ui.div('');
+
+            // output a structured table row for each dept using cliui
             ui.div({
                 text: dep.dept_id,
-                width: 10,
-                padding: [0, 0, 0, 0]
+                width: 10
             }, {
                 text: dep.department,
-                width: 20,
-                padding: [0, 0, 0, 0]
+                width: 15
             }, {
                 text: dep.dept_sales,
-                width: 20,
-                padding: [0, 0, 0, 0]
+                width: 15
             }, {
                 text: dep.overhead_costs,
-                width: 20,
-                padding: [0, 0, 0, 0]
+                width: 15
             }, {
                 text: dep.total_profit,
-                width: 20,
-                padding: [0, 0, 0, 0]
+                width: 15
             });
-
 
         }
 
+        // create a blank line as a spacer under the table
         ui.div('');
+
+        // tell cliui to output all ui.div
         console.log(ui.toString());
 
-        connection.end();
-        return;
+        // call the Menu function again
+        supervisorMenu()
 
     });
+};
+
+
+
+
+// =======================================================================================
+// SECOND MENU OPTION, called by supervisorMenu() - allows the creation of a new dept
+// =======================================================================================
+
+function createNewDept() {
+
+
+
+
+
+
+
+    
+
+    console.log("You chose CREATE NEW DEPARTMENT")
+    // connection.end();
+
+    // call the Menu function again
+    supervisorMenu()
+
 };
