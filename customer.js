@@ -134,7 +134,7 @@ function buyersQuery(res) {
                 type: "input",
                 message: chalk.magenta("Please enter the item number of the piece you wish to purchase:"),
                 validate: function (value) {
-                    if (isNaN(value) === false && value < (res.length + 1) && value > 0) {
+                    if (isNaN(value) === false) {
                         return true;
                     }
                     console.log(" Sorry, that isn't an item number in our inventory.")
@@ -174,35 +174,47 @@ function buyersQuery(res) {
             var item = theItem();
             // console.log(item);
 
-            // tell the customer the item and quantity they chose
-            console.log("\nYou selected " + chalk.magenta(answer.quantity) + " " + chalk.yellow(item.product_name) + " " + item.department + " by " + chalk.greenBright(item.artist_name));
+            if (item === undefined) {
 
-            // check to see if the quantity requested exceeds the number of items in inventory
-            if (answer.quantity > item.stock_quantity) {
+                console.log("\n" + chalk.red("SORRY, THAT ITEM NUMBER DOES NOT EXIST."));
 
-                // if the customer wants more items than exist in inventory, then
-                console.log("\nWe're sorry, but we only have " + chalk.magenta(item.stock_quantity) + " " + chalk.yellow(item.product_name) + " " + item.department + " by " + chalk.greenBright(item.artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(item.stock_quantity) + ".\n");
-
-                // send them back to the item and quantity input prompt (self-ref this function)
-                // pass in the Array of inventory objects, so customer can still select from it
+                // call the Inventory Management Menu function
                 buyersQuery(res);
+                // return;
 
             } else {
 
-                // otherwise, if the quantity of the order can be fulfilled based on inventory available
-                console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + Math.round(((item.retail_price * answer.quantity) + 0.00001) * 100) / 100) + " (" + answer.quantity + " @ $" + item.retail_price + " each)\n");
 
-                // send them on to the (3rd function) final order confirmation choice,
-                // which offers the choices: PLACE ORDER, EDIT SELECTION, or EXIT
-                // pass in both the inventory object array, and answers (item and quant) from this inquirer
-                finalChoice(res, answer, item);
+                // tell the customer the item and quantity they chose
+                console.log("\nYou selected " + chalk.magenta(answer.quantity) + " " + chalk.yellow(item.product_name) + " " + item.department + " by " + chalk.greenBright(item.artist_name));
 
-                // connection.end();
-                // return;
+                // check to see if the quantity requested exceeds the number of items in inventory
+                if (answer.quantity > item.stock_quantity) {
 
-            }
-        });
-}
+                    // if the customer wants more items than exist in inventory, then
+                    console.log("\nWe're sorry, but we only have " + chalk.magenta(item.stock_quantity) + " " + chalk.yellow(item.product_name) + " " + item.department + " by " + chalk.greenBright(item.artist_name) + " in stock right now. \nPlease enter your desired item number again and choose a quantity less than " + chalk.yellow(item.stock_quantity) + ".\n");
+
+                    // send them back to the item and quantity input prompt (self-ref this function)
+                    // pass in the Array of inventory objects, so customer can still select from it
+                    buyersQuery(res);
+
+                } else {
+
+                    // otherwise, if the quantity of the order can be fulfilled based on inventory available
+                    console.log(chalk.blue("\nExcellent choice.") + " Your total is " + chalk.yellow("$" + Math.round(((item.retail_price * answer.quantity) + 0.00001) * 100) / 100) + " (" + answer.quantity + " @ $" + item.retail_price + " each)\n");
+
+                    // send them on to the (3rd function) final order confirmation choice,
+                    // which offers the choices: PLACE ORDER, EDIT SELECTION, or EXIT
+                    // pass in both the inventory object array, and answers (item and quant) from this inquirer
+                    finalChoice(res, answer, item);
+
+                } // end IF ELSE for sufficient quantity check
+
+            } // end IF ELSE to check if item number exists in inventory
+
+        }); // end inquirer
+
+}; // end buyersQuery()
 
 
 
