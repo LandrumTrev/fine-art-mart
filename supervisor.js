@@ -15,7 +15,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var chalk = require('chalk');
-var ui = require('cliui')();
+
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -86,6 +86,11 @@ function supervisorMenu() {
 // =======================================================================================
 
 function viewSalesByDept() {
+
+    // cliui HAS TO BE REQUIRED INSIDE A FUNCTION INDIVIDUALLY
+    // OTHERWISE IT WILL REMEBER EVERYTHING THAT HAS BEEN PRINTED BEFORE
+    // AND PRINT OUT ALL PREVIOUS ENTRIES WITH THE CURRENT RETURN
+    var ui = require('cliui')();
 
     // connect to database and get the SUM of all product_sales, GROUP BY department
     connection.query("SELECT dept_id, department, SUM(product_sales) AS dept_sales, overhead_costs, SUM(product_sales) - overhead_costs AS total_profit FROM products RIGHT JOIN departments ON products.department = departments.dept_name GROUP BY department, dept_id", function (err, depts) {
@@ -164,6 +169,11 @@ function viewSalesByDept() {
 // =======================================================================================
 
 function createNewDept() {
+
+    // cliui HAS TO BE REQUIRED INSIDE A FUNCTION INDIVIDUALLY
+    // OTHERWISE IT WILL REMEBER EVERYTHING THAT HAS BEEN PRINTED BEFORE
+    // AND PRINT OUT ALL PREVIOUS ENTRIES WITH THE CURRENT RETURN
+    var ui = require('cliui')();
 
     // header display messages
     console.log(chalk.blue('\n--------------------------------------------------------------------'));

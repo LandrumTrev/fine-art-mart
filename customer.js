@@ -15,7 +15,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var chalk = require('chalk');
-var ui = require('cliui')();
 
 
 var connection = mysql.createConnection({
@@ -39,6 +38,11 @@ connection.connect(function (err) {
 
 // call function to display a full list of all items available for purchase
 function displayInventory() {
+
+    // cliui HAS TO BE REQUIRED INSIDE A FUNCTION INDIVIDUALLY
+    // OTHERWISE IT WILL REMEBER EVERYTHING THAT HAS BEEN PRINTED BEFORE
+    // AND PRINT OUT ALL PREVIOUS ENTRIES WITH THE CURRENT RETURN
+    var ui = require('cliui')();
 
     // connect to database and get all items from the products table
     connection.query("SELECT * FROM products ORDER BY department, retail_price", function (err, res) {

@@ -15,7 +15,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var chalk = require('chalk');
-var ui = require('cliui')();
 
 
 var connection = mysql.createConnection({
@@ -82,7 +81,7 @@ function managerMenu() {
             } else {
                 console.log("Please enter a valid selection.")
             }
-
+            return;
         });
 
 }
@@ -95,6 +94,11 @@ function managerMenu() {
 
 // display a full list of all items in inventory and all info about each item
 function displayForSale() {
+
+    // cliui HAS TO BE REQUIRED INSIDE A FUNCTION INDIVIDUALLY
+    // OTHERWISE IT WILL REMEBER EVERYTHING THAT HAS BEEN PRINTED BEFORE
+    // AND PRINT OUT ALL PREVIOUS ENTRIES WITH THE CURRENT RETURN
+    var ui = require('cliui')();
 
     // connect to database and get all items from the products table
     connection.query("SELECT * FROM products ORDER BY department, retail_price", function (err, res) {
@@ -170,6 +174,7 @@ function displayForSale() {
         // call the Inventory Management Menu function
         managerMenu();
 
+        return;
     });
 };
 
@@ -181,6 +186,11 @@ function displayForSale() {
 
 // call to display low inventory items
 function viewLowStock() {
+
+    // cliui HAS TO BE REQUIRED INSIDE A FUNCTION INDIVIDUALLY
+    // OTHERWISE IT WILL REMEBER EVERYTHING THAT HAS BEEN PRINTED BEFORE
+    // AND PRINT OUT ALL PREVIOUS ENTRIES WITH THE CURRENT RETURN
+    var ui = require('cliui')();
 
     // fetch all items from the products table in db
     connection.query("SELECT * FROM products", function (err, res) {
@@ -262,6 +272,8 @@ function viewLowStock() {
         // call the Inventory Management Menu function
         managerMenu();
 
+        return;
+
     }); // end connection.query
 
 }; // end viewLowStock()
@@ -336,7 +348,7 @@ function addInventory() {
 
                 if (itemNewQuant === undefined) {
 
-                    console.log("\n" +  chalk.red("SORRY, THAT ITEM NUMBER DOES NOT EXIST.") );
+                    console.log("\n" + chalk.red("SORRY, THAT ITEM NUMBER DOES NOT EXIST."));
 
                     // call the Inventory Management Menu function
                     managerMenu();
@@ -379,15 +391,17 @@ function addInventory() {
                                     // call the initial Manager's Menu function
                                     managerMenu();
 
-                                }); // end connection.query(SELECT *) new select all to confirm updated quantity
+                                    return;
 
-                        }); // end connection.query(UPDATE)
+                                }); // end third connection.query(SELECT *) to confirm updated quantity
+
+                        }); // end second connection.query(UPDATE)
 
                 }; // end IF ELSE test for valid item number
 
             }); // end inquirer
 
-    }); // end connection.query(SELECT *)
+    }); // end first connection.query(SELECT *)
 
 }; // end addInventory()
 
@@ -399,6 +413,11 @@ function addInventory() {
 
 // call to add a brand new item and it's details into the database
 function addItem() {
+
+    // cliui HAS TO BE REQUIRED INSIDE A FUNCTION INDIVIDUALLY
+    // OTHERWISE IT WILL REMEBER EVERYTHING THAT HAS BEEN PRINTED BEFORE
+    // AND PRINT OUT ALL PREVIOUS ENTRIES WITH THE CURRENT RETURN
+    var ui = require('cliui')();
 
     // header display messages
     ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
@@ -471,17 +490,75 @@ function addItem() {
                             product_name: newItem.name
                         },
                         function (err, resB) {
+
                             if (err) throw err;
 
-                            console.log(chalk.blue('\n SUCCESS! You have added the following new product to inventory:'));
-                            console.log(chalk.blue('\n--------------------------------------------------------------------'));
-                            console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
-                            console.log(chalk.blue('--------------------------------------------------------------------\n'));
+                            // list header display messages
+                            ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+                            ui.div(chalk.red(' SUCCESS! YOU HAVE ADDED THE FOLLOWING ITEM TO THE STORE INVENTORY:'));
+                            ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
 
-                            console.log("   " + chalk.gray(resB[0].item_id) + "   " + resB[0].retail_price + "   " + chalk.yellow(resB[0].product_name) + " by " + chalk.greenBright(resB[0].artist_name) + " " + chalk.gray("(" + resB[0].stock_quantity + ")") + " " + chalk.gray(resB[0].department) + "\n");
+                            // create structured table headings using cliui
+                            ui.div({
+                                text: chalk.magenta("#"),
+                                width: 4
+                            }, {
+                                text: chalk.magenta("price"),
+                                width: 8
+                            }, {
+                                text: chalk.magenta("title"),
+                                width: 30
+                            }, {
+                                text: chalk.magenta("artist"),
+                                width: 20
+                            }, {
+                                text: chalk.magenta("department"),
+                                width: 12
+                            }, {
+                                text: chalk.magenta("stock"),
+                                width: 9
+                            });
+
+                            ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
+
+                            
+                            // makes a single digit item# double: 1 becomes 01
+                            var itemNo = resB[0].item_id;
+                            if (itemNo < 10) {
+                                itemNo = "0" + itemNo;
+                            }
+
+                            // output a structured table row for each dept using cliui
+                            ui.div({
+                                text: chalk.magenta(itemNo),
+                                width: 4
+                            }, {
+                                text: resB[0].retail_price,
+                                width: 8
+                            }, {
+                                text: chalk.yellow(resB[0].product_name),
+                                width: 30
+                            }, {
+                                text: chalk.green(resB[0].artist_name),
+                                width: 20
+                            }, {
+                                text: chalk.gray(resB[0].department),
+                                width: 12
+                            }, {
+                                text: chalk.gray(resB[0].stock_quantity),
+                                width: 9
+                            });
+
+                            // create a blank line spacer between each row
+                            ui.div('');
+
+                            // tell cliui to output all ui.div5
+                            console.log(ui.toString());
 
                             // call the initial Manager's Menu function
                             managerMenu();
+
+                            return;
 
                         }); // end connection.query(SELECT *) new select all to confirm added item details
 
