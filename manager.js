@@ -75,17 +75,15 @@ function managerMenu() {
                 addItem();
 
             } else if (choice.stockMgmnt === "EXIT INVENTORY MANAGER") {
-                // call function that adds a brand new item into the inventory
-                managerExit();
+                // disconnects from db and exits Supervisor app
+                console.log("You have now logged out of the Fine Art Mart INVENTORY MANAGER. BYE!")
+                connection.end();
 
             } else {
                 console.log("Please enter a valid selection.")
             }
 
         });
-
-    // tell cliui to output all ui.div
-    // console.log(ui.toString());
 
 }
 
@@ -129,9 +127,6 @@ function displayForSale() {
             text: chalk.magenta("stock"),
             width: 9
         });
-
-
-        // console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
 
         ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
 
@@ -285,9 +280,6 @@ function addInventory() {
     console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: MANAGER \n'));
     console.log(chalk.blue(' ENTER THE ITEM NUMBER AND NUMBER OF PRODUCTS TO INCREASE ITS INVENTORY:'));
     console.log(chalk.blue('\n-------------------------------------------------------------------------------'));
-
-    // tell cliui to output all ui.div5
-    // console.log(ui.toString());
 
     // first connection called so inquirer's validate function can make sure that
     // manager is choosing an existing stock item number to update
@@ -484,19 +476,3 @@ function addItem() {
         }); // end inquirer
 
 }; // end addItem()
-
-
-
-// =======================================================================================
-// 5. MANAGER EXIT - EXIT THE MANAGEMENT FUNCTION
-// =======================================================================================
-
-// call this function to exit from the Inventory Manager application
-function managerExit() {
-
-    console.log(chalk.red("\nYou have now logged out of the Fine Art Mart INVENTORY MANAGER.\n"));
-
-    // make sure to disconnect from the database at a functional end point
-    connection.end();
-    // return;
-};

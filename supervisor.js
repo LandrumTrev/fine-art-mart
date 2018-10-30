@@ -42,16 +42,25 @@ connection.connect(function (err) {
 function supervisorMenu() {
 
     // header display messages
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
-    console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR'));
-    console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    // console.log(chalk.blue('\n--------------------------------------------------------------------'));
+    // console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR'));
+    // console.log(chalk.blue('\n--------------------------------------------------------------------'));
+
+    // list header display messages
+    ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+    ui.div(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR \n'));
+    ui.div(chalk.red(' SUPERVISOR FUNCTION MENU:'));
+    // ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+    
+    // tell cliui to output all ui.div
+    console.log(ui.toString());
 
     // ask the supervisor which department management function to access
     inquirer
         .prompt({
             name: "superQuest",
             type: "rawlist",
-            message: chalk.red("\nEnter the number of a department supervisory function: \n"),
+            message: chalk.red("\n Enter the number of a department supervisory function: \n"),
             choices: ["VIEW PRODUCT SALES BY DEPARTMENT", "CREATE NEW DEPARTMENT", "EXIT DEPARTMENT SUPERVISOR"]
         })
         .then(function (menu) {
@@ -67,10 +76,9 @@ function supervisorMenu() {
                 createNewDept();
 
             } else if (menu.superQuest === "EXIT DEPARTMENT SUPERVISOR") {
-                // call function that disconnects from db and exits Supervisor app
+                // disconnects from db and exits Supervisor app
                 console.log("You chose EXIT DEPARTMENT SUPERVISOR. BYE!")
                 connection.end();
-                // superExit();
 
             } else {
                 console.log("Please enter a valid selection.")
@@ -87,27 +95,33 @@ function supervisorMenu() {
 function viewSalesByDept() {
 
     // connect to database and get the SUM of all product_sales, GROUP BY department
-    connection.query("SELECT dept_id, department, SUM(product_sales) AS dept_sales, overhead_costs, SUM(product_sales) - overhead_costs AS total_profit FROM departments RIGHT JOIN products ON products.department = departments.dept_name GROUP BY department, dept_id", function (err, depts) {
+    connection.query("SELECT dept_id, department, SUM(product_sales) AS dept_sales, overhead_costs, SUM(product_sales) - overhead_costs AS total_profit FROM products RIGHT JOIN departments ON products.department = departments.dept_name GROUP BY department, dept_id", function (err, depts) {
 
-        // console.log(depts);
+        // list header display messages
+        ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+        ui.div(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR \n'));
+        ui.div(chalk.red(' THE FOLLOWING ARE ALL DEPARTMENTS IN THE STORE:'));
+        ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
 
         // create structured table headings using cliui
         ui.div({
-            text: chalk.green("\nDept ID"),
+            text: chalk.gray("id"),
+            width: 5
+        }, {
+            text: chalk.yellow("department"),
+            width: 15
+        }, {
+            text: chalk.green("sales"),
             width: 10
         }, {
-            text: chalk.green("\nDepartment"),
-            width: 15
+            text: chalk.red("overhead"),
+            width: 12
         }, {
-            text: chalk.green("\nDept Sales"),
-            width: 15
-        }, {
-            text: chalk.green("\nOverhead"),
-            width: 15
-        }, {
-            text: chalk.green("\nTotal Profit"),
-            width: 15
+            text: "profit",
+            width: 10
         });
+
+        ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
 
         // loop through each department object in (depts) array of objects
         for (let d = 0; d < depts.length; d++) {
@@ -120,20 +134,20 @@ function viewSalesByDept() {
 
             // output a structured table row for each dept using cliui
             ui.div({
-                text: dep.dept_id,
+                text: chalk.gray(dep.dept_id),
+                width: 5
+            }, {
+                text: chalk.yellow(dep.department),
+                width: 15
+            }, {
+                text: chalk.green(dep.dept_sales),
                 width: 10
             }, {
-                text: dep.department,
-                width: 15
-            }, {
-                text: dep.dept_sales,
-                width: 15
-            }, {
-                text: dep.overhead_costs,
-                width: 15
+                text: chalk.red(dep.overhead_costs),
+                width: 12
             }, {
                 text: dep.total_profit,
-                width: 15
+                width: 10
             });
 
         }
@@ -151,8 +165,6 @@ function viewSalesByDept() {
 };
 
 
-
-
 // =======================================================================================
 // SECOND MENU OPTION, called by supervisorMenu() - allows the creation of a new dept
 // =======================================================================================
@@ -162,7 +174,7 @@ function createNewDept() {
     // header display messages
     console.log(chalk.blue('\n--------------------------------------------------------------------'));
     console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR \n'));
-    console.log(chalk.blue(' ENTER THE FOLLOWING INFORMATION TO ADD A NEW DEPARTMENT TO THE STORE:'));
+    console.log(chalk.red(' ENTER THE FOLLOWING INFORMATION TO ADD A NEW DEPARTMENT TO THE STORE:'));
     console.log(chalk.blue('\n--------------------------------------------------------------------'));
 
     // ask for the name and overhead cost of the new department
@@ -203,7 +215,7 @@ function createNewDept() {
                             dept_name: newDept.deptName
                         },
                         function (err, newDep) {
-                            
+
                             if (err) throw err;
 
                             ui.div(chalk.blue('\n--------------------------------------------------------------------'));

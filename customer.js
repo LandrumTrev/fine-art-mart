@@ -46,12 +46,33 @@ function displayInventory() {
         if (err) throw err;
 
         // list header display messages
-        console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.yellow('\n Welcome to FINE ART MART! \n'));
-        console.log(chalk.blue(' Here is a list of fine art reproductions we currently have in stock:'));
-        console.log(chalk.blue('\n--------------------------------------------------------------------'));
-        console.log(chalk.magenta('item# | price | title and artist | (quantity in stock) | department'));
-        console.log(chalk.blue('--------------------------------------------------------------------\n'));
+        ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
+        ui.div(chalk.yellow('\n Welcome to FINE ART MART! \n'));
+        ui.div(chalk.blue(' Here is a list of fine art reproductions we currently have in stock:'));
+        ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
+
+        // create structured table headings using cliui
+        ui.div({
+            text: chalk.magenta("#"),
+            width: 4
+        }, {
+            text: chalk.magenta("price"),
+            width: 8
+        }, {
+            text: chalk.magenta("title"),
+            width: 30
+        }, {
+            text: chalk.magenta("artist"),
+            width: 20
+        }, {
+            text: chalk.magenta("department"),
+            width: 12
+        }, {
+            text: chalk.magenta("stock"),
+            width: 9
+        });
+
+        ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
 
         // call a FOR LOOP on (res) to console.log all items in inventory
         for (let i = 0; i < res.length; i++) {
@@ -61,10 +82,36 @@ function displayInventory() {
                 itemNo = "0" + itemNo;
             }
 
-            console.log("   " + chalk.magenta(itemNo) + "   " + res[i].retail_price + "   " + chalk.yellow(res[i].product_name) + " by " + chalk.greenBright(res[i].artist_name) + " " + chalk.gray("(x" + res[i].stock_quantity + ")") + " " + chalk.gray(res[i].department) + "\n");
+            // output a structured table row for each dept using cliui
+            ui.div({
+                text: chalk.magenta(itemNo),
+                width: 4
+            }, {
+                text: res[i].retail_price,
+                width: 8
+            }, {
+                text: chalk.yellow(res[i].product_name),
+                width: 30
+            }, {
+                text: chalk.green(res[i].artist_name),
+                width: 20
+            }, {
+                text: chalk.gray(res[i].department),
+                width: 12
+            }, {
+                text: chalk.gray(res[i].stock_quantity),
+                width: 9
+            });
+
+            // create a blank line spacer between each row
+            ui.div('');
+
         }
 
-        console.log(chalk.blue('\n--------------------------------------------------------------------\n'));
+        ui.div(chalk.blue('-------------------------------------------------------------------------------\n'));
+
+        // tell cliui to output all ui.div
+        console.log(ui.toString());
 
         // after display inventory, call function that asks item and quantity to purchase
         // and pass in (res), which is an array of all inventory objects
@@ -122,7 +169,7 @@ function buyersQuery(res) {
                 }
                 return itemMatch;
             };
-            
+
             // item now represents the whole object of the item the customer has selected
             var item = theItem();
             // console.log(item);
