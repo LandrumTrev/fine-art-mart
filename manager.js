@@ -294,10 +294,10 @@ function addInventory() {
                     type: "input",
                     message: chalk.magenta("Enter the product's item #:"),
                     validate: function (value) {
-                        if (isNaN(value) === false && value < (res.length + 1) && value > 0) {
+                        if (isNaN(value) === false) {
                             return true;
                         }
-                        console.log(" Sorry, that isn't an item number in our inventory.")
+                        console.log(" Please enter a valid item number.")
                         return false;
                     }
                 },
@@ -315,6 +315,8 @@ function addInventory() {
             ])
             .then(function (stock) {
 
+                // console.log(stock);
+
                 // match the item number indicated by manager to the item with that item_id
                 var updatedItem = function () {
                     for (let p = 0; p < res.length; p++) {
@@ -331,45 +333,57 @@ function addInventory() {
                 var itemNewQuant = updatedItem();
                 // console.log(itemNewQuant);
 
-                // the new quantity to SET is the # of items added + current # of items in stock
-                // needs parseInt() as these raw values are Strings (numbers concatenate instead of add w/o parseInt)
-                var newQuantity = parseInt(stock.stockQuantity) + parseInt(itemNewQuant.stock_quantity);
 
-                // console.log(newQuantity);
+                if (itemNewQuant === undefined) {
 
-                // second connection query is called to UPDATE the stock_quantity of the item_id
-                connection.query("UPDATE products SET ? WHERE ?",
-                    [{
-                            stock_quantity: newQuantity
-                        },
-                        {
-                            item_id: itemNewQuant.item_id
-                        }
-                    ],
-                    function (err, res2) {
+                    console.log("\n" +  chalk.red("SORRY, THAT ITEM NUMBER DOES NOT EXIST.") );
 
-                        if (err) throw err;
+                    // call the Inventory Management Menu function
+                    managerMenu();
 
-                        // tell the manager the item and number of items added
-                        console.log("\nYou have added " + chalk.yellow(stock.stockQuantity) + " copies of " + chalk.yellow(itemNewQuant.product_name) + " " + itemNewQuant.department + " by " + chalk.greenBright(itemNewQuant.artist_name));
+                } else {
 
-                        // third connection query to confirm new stock quantity number
-                        connection.query("SELECT * FROM products WHERE ?", {
-                                item_id: itemNewQuant.item_id
+                    // the new quantity to SET is the # of items added + current # of items in stock
+                    // needs parseInt() as these raw values are Strings (numbers concatenate instead of add w/o parseInt)
+                    var newQuantity = parseInt(stock.stockQuantity) + parseInt(itemNewQuant.stock_quantity);
+
+                    // console.log(newQuantity);
+
+                    // second connection query is called to UPDATE the stock_quantity of the item_id
+                    connection.query("UPDATE products SET ? WHERE ?",
+                        [{
+                                stock_quantity: newQuantity
                             },
-                            function (err, res3) {
+                            {
+                                item_id: itemNewQuant.item_id
+                            }
+                        ],
+                        function (err, res2) {
 
-                                if (err) throw err;
+                            if (err) throw err;
 
-                                // confirm the updated item's quantity with data from a fresh mySQL SELECT
-                                console.log("\nThere are now a total of " + chalk.yellow(res3[0].stock_quantity) + " copies of " + chalk.yellow(res3[0].product_name) + " " + res3[0].department + " by " + chalk.greenBright(res3[0].artist_name) + " in stock.");
+                            // tell the manager the item and number of items added
+                            console.log("\nYou have added " + chalk.yellow(stock.stockQuantity) + " copies of " + chalk.yellow(itemNewQuant.product_name) + " " + itemNewQuant.department + " by " + chalk.greenBright(itemNewQuant.artist_name));
 
-                                // call the initial Manager's Menu function
-                                managerMenu();
+                            // third connection query to confirm new stock quantity number
+                            connection.query("SELECT * FROM products WHERE ?", {
+                                    item_id: itemNewQuant.item_id
+                                },
+                                function (err, res3) {
 
-                            }); // end connection.query(SELECT *) new select all to confirm updated quantity
+                                    if (err) throw err;
 
-                    }); // end connection.query(UPDATE)
+                                    // confirm the updated item's quantity with data from a fresh mySQL SELECT
+                                    console.log("\nThere are now a total of " + chalk.yellow(res3[0].stock_quantity) + " copies of " + chalk.yellow(res3[0].product_name) + " " + res3[0].department + " by " + chalk.greenBright(res3[0].artist_name) + " in stock.");
+
+                                    // call the initial Manager's Menu function
+                                    managerMenu();
+
+                                }); // end connection.query(SELECT *) new select all to confirm updated quantity
+
+                        }); // end connection.query(UPDATE)
+
+                }; // end IF ELSE test for valid item number
 
             }); // end inquirer
 
