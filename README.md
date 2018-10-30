@@ -38,7 +38,6 @@ If the customer chooses PLACE ORDER, they are thanked for their order and notifi
 Finally, the customer is queried as to whether they would like to make another purchase. If so, they are again asked for an item number and quantity. If they do not wish to make another purchase, they are presented with a thank you message, and the script terminates and disconnects from the database.
 
 To access the Storefront, type:
-
 ```
 $ node customer
 ```
@@ -61,7 +60,6 @@ ADD NEW PRODUCT allows the manager to create an entry for a new item that does n
 EXIT INVENTORY MANAGER exits by terminating the script and disconnecting from the database.
 
 Access the Inventory Manager with:
-
 ```
 $ node manager
 ```
@@ -80,7 +78,6 @@ CREATE NEW DEPARTMENT allows the supervisor to create a new department by queryi
 EXIT DEPARTMENT SUPERVISOR disconnects from the database and ends the supervisor.js script.
 
 Access the Department Supervisor with:
-
 ```
 $ node supervisor
 ```
