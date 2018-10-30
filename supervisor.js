@@ -41,11 +41,6 @@ connection.connect(function (err) {
 
 function supervisorMenu() {
 
-    // header display messages
-    // console.log(chalk.blue('\n--------------------------------------------------------------------'));
-    // console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR'));
-    // console.log(chalk.blue('\n--------------------------------------------------------------------'));
-
     // list header display messages
     ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
     ui.div(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR \n'));
