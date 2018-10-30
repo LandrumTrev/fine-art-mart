@@ -42,13 +42,10 @@ connection.connect(function (err) {
 function supervisorMenu() {
 
     // list header display messages
-    ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
-    ui.div(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR \n'));
-    ui.div(chalk.red(' SUPERVISOR FUNCTION MENU:'));
-    // ui.div(chalk.blue('\n-------------------------------------------------------------------------------'));
-    
-    // tell cliui to output all ui.div
-    console.log(ui.toString());
+    console.log(chalk.blue('\n-------------------------------------------------------------------------------'));
+    console.log(chalk.yellow('\n You are logged in to Fine Art Mart as: SUPERVISOR \n'));
+    console.log(chalk.red(' SUPERVISOR FUNCTION MENU:'));
+
 
     // ask the supervisor which department management function to access
     inquirer
@@ -77,6 +74,7 @@ function supervisorMenu() {
 
             } else {
                 console.log("Please enter a valid selection.")
+                return;
             }
         });
 };
@@ -157,6 +155,7 @@ function viewSalesByDept() {
         supervisorMenu();
 
     });
+
 };
 
 
