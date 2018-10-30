@@ -1,7 +1,7 @@
 {
   "name": "fine-art-mart",
   "version": "1.0.0",
-  "description": "Fine Art Mart, a Node.js and MySQL CLI store inventory app",
+  "description": "A Node.js and MySQL CLI storefront, inventory manager, and department supervisor application",
   "main": "customer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,11 +16,16 @@
     "CLI",
     "store",
     "inventory",
+    "stock",
+    "management",
+    "manager",
+    "supervisor",
     "app",
     "fine",
     "art",
-    "art",
-    "art",
+    "sculpture",
+    "sculptures",
+    "print",
     "prints"
   ],
   "author": "Richard Trevillian",
