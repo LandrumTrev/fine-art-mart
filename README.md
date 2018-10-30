@@ -1,15 +1,23 @@
 # Fine Art Mart
 
-### A Node.js and MySQL CLI storefront and inventory manager for fine art reproductions
+### A Node.js and MySQL CLI storefront, inventory manager, and department supervisor application
 
-*MySQL, Node.js, npm, node_modules (inquirer, mysql, chalk). customer.js is a public-facing storefront, manager.js is an inventory control management back end.*
+*MySQL, Node.js, npm, node_modules (inquirer, mysql, cliui, chalk), JavaScript. customer.js is a public-facing storefront, manager.js is an inventory control management back end, supervisor.js is a financial stats and new department creator application.*
 _________________________________________________
 
 [[Fine Art Mart demo movie](https://github.com/LandrumTrev/fine-art-mart/blob/master/FineArtMart-demo.mp4)](https://github.com/LandrumTrev/fine-art-mart/blob/master/FineArtMart-demo.mp4)
 
 _________________________________________________
 
-#### Fine Art Mart is a multi-sectional application, composed of a public-facing customer storefront application (customer.js), and an inventory manager application for internal use (manager.js). 
+#### Fine Art Mart is a multi-sectional application, composed of a public-facing customer storefront (customer.js), a manager app for inventory control (manager.js), and a supervisor back-end for viewing financial information and creating new departments (supervisor.js). 
+
+The application has a command-line interface and connects with a MySQL database (schema and seed file included). Written in JavaScript for Node.js, it uses the following npm packages: 
+* mysql for database queries, 
+* inquirer for command-line input prompts, 
+* cliui to format tabluar data output in the CLI, and 
+* chalk to color highlight both inquirer and cliui command line output
+ 
+_________________________________________________
 
 ### STOREFRONT
 In the customer.js application, the user is greeted with a welcome message and a price list of all available art reproductions in stock (item number, price, title, artist, and quantity in stock). At the end of the price list, inquirer is utilized to prompt the customer for the item number of the print they wish to purchase. After entering the item number, they are asked how many copies of the print they wish to purchase. 
@@ -56,6 +64,25 @@ Access the Inventory Manager with:
 
 ```
 $ node manager
+```
+_________________________________________________
+
+### DEPARTMENT SUPERVISOR
+Separate and above the functions of the manager.js application is the Department Supervisor (supervisor.js). 
+
+The Department Supervisor menu only has three options:
+* VIEW PRODUCT SALES BY DEPARTMENT
+* CREATE NEW DEPARTMENT
+* ADD TO INVENTORY
+
+VIEW PRODUCT SALES BY DEPARTMENT displays a table listing all departments and their information: dept id #, department name, dept sales, dept overhead costs, and department profit (dynamically calculated as a virtual column in the returned data table objects array as the difference between sales and overhead).
+CREATE NEW DEPARTMENT allows the supervisor to create a new department by querying the name and overhead cost of the new department.
+EXIT DEPARTMENT SUPERVISOR disconnects from the database and ends the supervisor.js script.
+
+Access the Department Supervisor with:
+
+```
+$ node supervisor
 ```
 _________________________________________________
 
